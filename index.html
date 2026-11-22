@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ohm's Law Lab</title>
+<style>
+:root{--bg:#f4f5f7;--fg:#1d2330;--card:#fff;--bd:#c9cfdb;--ac:#1f5fd0}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8ebf2;--card:#1d222b;--bd:#39404d;--ac:#6ea0ff}}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+nav{display:flex;position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);z-index:5}
+nav button{flex:1;padding:12px;border:0;background:none;color:var(--fg);font-weight:600;border-bottom:3px solid transparent}
+nav button.on{border-color:var(--ac);color:var(--ac)}
+section{max-width:1100px;margin:auto;padding:10px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px}
+.c h3{margin:0 0 6px;font-size:14px}canvas{width:100%;display:block;border-radius:6px}
+button,select,input{font:inherit;padding:7px 9px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+button{cursor:pointer;font-weight:600}input[type=range]{width:100%;padding:0}input[type=text]{width:90px}
+.r{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:5px 0}.fb{min-height:36px;margin:4px 0}
+table{width:100%;border-collapse:collapse;text-align:center}td,th{border-bottom:1px solid var(--bd);padding:3px}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
+#ov[hidden]{display:none}#zc{max-height:70vh;width:auto;max-width:100%}.ok{color:#0a7a2f}.bad{color:#c22}.w{color:#b86a00}
+#ld{position:fixed;inset:0;z-index:99;background:linear-gradient(160deg,#0f2a5c,#1f5fd0);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .5s}
+#ld.out{opacity:0;pointer-events:none}#ld h2{margin:0;font-size:24px}#ld p{margin:0;opacity:.85;min-height:18px}
+.sp{width:74px;height:74px;border-radius:50%;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;animation:rot 1s linear infinite;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700}
+.sp b{animation:rot 1s linear infinite reverse}.bar{width:220px;height:8px;border-radius:5px;background:rgba(255,255,255,.25);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#fff;animation:fill 2.6s ease-out forwards}
+@keyframes rot{to{transform:rotate(360deg)}}@keyframes fill{to{width:100%}}
+</style></head><body>
+<div id="ld"><div class="sp"><b>&Omega;</b></div><h2>Ohm's Law Lab</h2><div class="bar"><i></i></div><p id="lt">Loading&hellip;</p></div>
+<nav><button class="on" data-t="o">Ohm's Law</button><button data-t="g">Wire Lab</button></nav>
+
+<section id="o">
+ <div class="c"><h3>Voltmeter &mdash; tap to zoom</h3><canvas id="cv" onclick="zoom('V')"></canvas>
+  <div class="r"><select id="vr" onchange="S.vr=+this.value;ref()"><option value="0">0&ndash;3 V (LC 0.05)<option value="1">0&ndash;10 V (LC 0.2)<option value="2">0&ndash;15 V (LC 0.5)</select></div>
+  <h3>Ammeter &mdash; tap to zoom</h3><canvas id="ca" onclick="zoom('A')"></canvas>
+  <div class="r"><select id="ar" onchange="S.ar=+this.value;ref()"><option value="0">0&ndash;100 mA (LC 1)<option value="1">0&ndash;500 mA (LC 5)<option value="2">0&ndash;1000 mA (LC 10)</select></div></div>
+ <div class="c"><h3>Circuit</h3><canvas id="cc"></canvas>
+  <div class="r"><button id="kb" onclick="S.key^=1;ref()">Key K: OPEN</button>
+   <select id="ee" onchange="S.E=+this.value;ref()"><option>1.5<option>3<option>4.5<option selected>6<option>9</select>V
+   <select onchange="S.conn=this.value;ref()"><option value="A">A: V across R<option value="B">B: V across A+R</select></div>
+  <div>Rheostat Rh = <b id="rv">100</b> &Omega;</div><input id="rh" type="range" min="0" max="100" step="0.1" value="100" oninput="S.rh=+this.value;ref()">
+  <div class="r"><button onclick="bump(-5)">-5</button><button onclick="bump(-1)">-1</button><button onclick="bump(-.1)">-0.1</button><button onclick="bump(.1)">+0.1</button><button onclick="bump(1)">+1</button><button onclick="bump(5)">+5</button></div>
+  <div id="wn" class="bad"></div></div>
+ <div class="c"><h3>Your observation</h3>
+  <div class="r">V (volt) <input id="ev" type="text" inputmode="decimal"> I (mA) <input id="ei" type="text" inputmode="decimal"></div>
+  <div class="r"><button onclick="rec()">Check &amp; record</button><button onclick="newR()">New wire</button><button onclick="reveal()">Reveal R</button></div>
+  <div id="fo" class="fb">Close the key, set Rh, tap a meter to zoom and read the needle.</div>
+  <canvas id="cg"></canvas><div id="fit"><b></b></div>
+  <table><thead><tr><th>#<th>V<th>I (mA)<th>V/I (&Omega;)</thead><tbody id="tb"></tbody></table></div>
+</section>
+
+<section id="g" hidden>
+ <div class="c"><h3>Screw gauge &mdash; pitch 1 mm, 100 divisions &mdash; tap to zoom</h3><canvas id="cs" onclick="zoom('G')"></canvas>
+  <div class="r"><button id="wb" onclick="togWire()">Insert wire</button><button onclick="zoom('G')">🔍 Zoom gauge</button><button onclick="G.dl=+(G.d+rg()*.003).toFixed(4);gd()">New spot</button>
+   <label><input type="checkbox" id="zc2" checked onchange="G.z=zerr(this.checked);ze=null;gd()"> zero error</label></div>
+  <div>Turn thimble (&larr; close | open &rarr;; the ratchet stops at the wire)</div>
+  <input id="tr" type="range" min="-100" max="600" step="0.1" value="300" oninput="G.turn=+this.value;gd()">
+  <div class="r"><button onclick="gn(-10)">-10</button><button onclick="gn(-1)">-1</button><button onclick="gn(-.1)">-0.1</button><button onclick="gn(.1)">+0.1</button><button onclick="gn(1)">+1</button><button onclick="gn(10)">+10</button></div>
+  <div id="gs" class="w"></div></div>
+ <div class="c"><h3>Your readings</h3>
+  <div class="r">MSR (mm) <input id="em" type="text" inputmode="decimal"> CSR (div) <input id="ec" type="text" inputmode="decimal"></div>
+  <div class="r"><button onclick="grec()">Check &amp; record diameter</button></div>
+  <div class="r">Zero error (mm, sign) <input id="ez" type="text" inputmode="decimal"><button onclick="gze()">Check zero error</button></div>
+  <div id="fg" class="fb">Remove the wire, close the jaws, find the zero error first. Then insert the wire and tighten until the ratchet clicks.</div>
+  <table><thead><tr><th>#<th>MSR<th>CSR<th>Observed<th>Corrected d (mm)</thead><tbody id="gt"></tbody></table><div id="gm"><b></b></div></div>
+ <div class="c"><h3>Metre scale &mdash; length of the wire &mdash; tap to zoom</h3><canvas id="cm" onclick="zoom('M')"></canvas>
+  <input id="ms" type="range" min="0" max="96" step="0.05" value="8" oninput="mp=+this.value;mdraw()">
+  <div class="r"><button onclick="mb(-5)">-5</button><button onclick="mb(-1)">-1</button><button onclick="mb(-.1)">-0.1</button><button onclick="mb(.1)">+0.1</button><button onclick="mb(1)">+1</button><button onclick="mb(5)">+5 cm</button><button onclick="zoom('M')">🔍 Zoom scale</button></div>
+  <div class="r">Left end (cm) <input id="l1" type="text" inputmode="decimal"> Right end (cm) <input id="l2" type="text" inputmode="decimal"></div>
+  <div class="r"><button onclick="lrec()">Check &amp; record length</button></div><div id="fl" class="fb">Slide the magnifier to each end of the wire and read to 0.1 cm (1 mm).</div><div id="ml"></div></div>
+ <div class="c"><h3>Specific resistance &rho; = R&middot;A / L</h3>
+  <div class="r">R (&Omega;) <input id="eR" type="text" inputmode="decimal"><button onclick="useS()">Use slope of my V&ndash;I graph</button></div>
+  <div class="r"><button onclick="rho()">Calculate &rho;</button><button onclick="revW()">Reveal wire</button><button onclick="newR()">New wire</button></div>
+  <pre id="res" style="white-space:pre-wrap;margin:6px 0;font:13px monospace"></pre>
+  <small>Reference &rho; (&Omega;&middot;m): Constantan 4.9e-7, Nichrome 1.10e-6, Manganin 4.4e-7, German silver 3.3e-7, Kanthal 1.45e-6. The wire here is the unknown resistor R of the Ohm's Law tab.</small></div>
+</section>
+
+<div id="ov" hidden><canvas id="zc"></canvas><div class="r" id="zb"></div></div>
+
+<script>
+const $=id=>document.getElementById(id),rg=()=>Math.random()*2-1,PI=Math.PI;
+const VR=[[3,.5,.05],[10,2,.2],[15,5,.5]],AR=[[.1,.02,.001],[.5,.1,.005],[1,.2,.01]],RG=50,IG=1e-3;
+const S={key:0,E:6,rh:100,conn:'A',vr:0,ar:0,R:0,data:[]};
+const MAT=[['Constantan',4.9e-7],['Nichrome',1.1e-6],['Manganin',4.4e-7],['German silver',3.3e-7],['Kanthal',1.45e-6]];
+let W,lenM=null,mp=8;
+function mkWire(){for(let t=0;t<500;t++){const m=MAT[Math.floor(Math.random()*5)];W={n:m[0],rho:m[1],d:+(.22+Math.random()*.38).toFixed(3),L:+(40+Math.random()*40).toFixed(3),x1:+(3+Math.random()*11).toFixed(3)};W.R=W.rho*W.L/100/(PI*(W.d*1e-3)**2/4);if(W.R>=3&&W.R<=90)break}S.R=W.R}
+mkWire();
+const M={V:{th:0,om:0,tg:0},A:{th:0,om:0,tg:0}};let zk=null,ze=null,diams=[];
+const rngOf=k=>k=='V'?VR[S.vr]:AR[S.ar];
+const rV=()=>VR[S.vr][0]/IG,rA=()=>{const f=AR[S.ar][0],rs=IG*RG/(f-IG);return RG*rs/(RG+rs)};
+function solve(){if(!S.key)return[0,0];const Ra=rA(),Rv=rV(),R=S.R,E=S.E,rh=S.rh;
+ if(S.conn=='A'){const re=R*Rv/(R+Rv),it=E/(.2+rh+Ra+re);return[it*re,it]}
+ const b=Ra+R,re=b*Rv/(b+Rv),it=E/(.2+rh+re),v=it*re;return[v,v/b]}
+function ref(){const[v,i]=solve();M.V.tg=v/VR[S.vr][0];M.A.tg=i/AR[S.ar][0];
+ $('kb').textContent='Key K: '+(S.key?'CLOSED':'OPEN');$('rv').textContent=S.rh.toFixed(1);$('rh').value=S.rh;
+ $('wn').textContent=(M.V.tg>1?'\u26a0 Voltmeter off-scale! ':'')+(M.A.tg>1?'\u26a0 Ammeter off-scale!':'');circuit()}
+function bump(d){S.rh=Math.max(0,Math.min(100,+(S.rh+d).toFixed(1)));ref()}
+
+/* ---------- moving-coil dial ---------- */
+function dial(cv,k,w){const m=M[k],[fs,mj,lc]=rngOf(k),s=w/350,n=Math.round(fs/lc),km=Math.round(mj/lc),sc=k=='A'?1000:1,u=k=='A'?'mA':'V';
+ cv.width=w;cv.height=225*s;const c=cv.getContext('2d'),lw=b=>b*Math.pow(s,-.6);c.scale(s,s);
+ c.fillStyle='#f6f1e0';c.fillRect(0,0,350,225);c.strokeStyle='#222';c.fillStyle='#111';c.lineWidth=lw(1.2);
+ c.beginPath();c.arc(175,195,150,-PI/2-.8727,-PI/2+.8727);c.stroke();
+ const P=(a,r)=>[175+r*Math.sin(a),195-r*Math.cos(a)];
+ for(let i=0;i<=n;i++){const a=(-50+100*i/n)*PI/180,L=i%km==0?17:(km%2==0&&i%(km/2)==0?12:7);
+  c.lineWidth=lw(i%km==0?1.6:.8);c.beginPath();c.moveTo(...P(a,150));c.lineTo(...P(a,150-L));c.stroke();
+  if(i%km==0){c.font='bold 10px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(+(i*lc*sc).toFixed(4),...P(a,119))}}
+ c.font='bold 26px sans-serif';c.fillText(u,40,190);c.font='bold 10px sans-serif';c.textAlign='left';c.fillText(k=='V'?'VOLTMETER':'AMMETER',12,14);
+ c.textAlign='right';c.fillStyle='#a00';c.fillText('0-'+fs*sc+' '+u,338,14);c.fillStyle='#555';c.font='9px sans-serif';c.fillText('LC = '+(+(lc*sc).toFixed(4))+' '+u,338,30);
+ const a=(-50+100*m.th)*PI/180;c.strokeStyle='#d01010';c.lineWidth=lw(1.4);c.beginPath();c.moveTo(...P(a+PI,24));c.lineTo(...P(a,147));c.stroke();
+ c.fillStyle='#2a2a2a';c.beginPath();c.arc(175,195,9,0,7);c.fill()}
+const settled=()=>['V','A'].every(k=>Math.abs(M[k].th-M[k].tg)<.002&&Math.abs(M[k].om)<.02);
+
+/* ---------- circuit ---------- */
+function circuit(){const cv=$('cc'),c=cv.getContext('2d');cv.width=460;cv.height=260;c.fillStyle='#fff';c.fillRect(0,0,460,260);
+ c.strokeStyle='#111';c.lineWidth=2;
+ const L=(...p)=>{c.beginPath();c.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(p[i],p[i+1]);c.stroke()};
+ const T=(t,x,y,col='#111',f='bold 11px sans-serif')=>{c.fillStyle=col;c.font=f;c.textAlign='center';c.fillText(t,x,y)};
+ const Z=(x1,y1,x2,y2,n,am)=>{const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),px=-dy/l,py=dx/l;c.beginPath();c.moveTo(x1,y1);
+  for(let k=1;k<2*n;k++){const t=k/(2*n),g=k%2?1:-1;c.lineTo(x1+dx*t+px*am*g,y1+dy*t+py*am*g)}c.lineTo(x2,y2);c.stroke()};
+ const O=(x,y,r,f)=>{c.fillStyle=f;c.beginPath();c.arc(x,y,r,0,7);c.fill();c.stroke()};
+ const top=45,bot=170,lx=40,rx=410;
+ L(lx,top,170,top);L(210,top,315,top);L(355,top,rx,top);
+ for(const[x,h,w]of[[170,16,3],[180,9,5],[200,16,3],[210,9,5]]){c.lineWidth=w;L(x,top-h,x,top+h)}c.lineWidth=2;
+ T('+',158,top-18);T('\u2212',223,top-18);T('E = '+S.E+' V',190,top+30,'#111','10px sans-serif');
+ O(315,top,3,'#111');O(355,top,3,'#111');S.key?L(315,top,355,top):L(315,top,349,top-20);T('K',335,top-32,'#c03030');
+ L(rx,top,rx,80);Z(rx,80,rx,140,4,6);L(rx,140,rx,bot);const sy=140-60*S.rh/100;L(rx-36,top,rx-36,sy,rx-9,sy);
+ T('Rh',rx+22,112,'#c03030');T('Rh = '+S.rh.toFixed(1)+' \u03a9',rx-80,156,'#111','10px sans-serif');
+ L(rx,bot,300,bot);Z(300,bot,140,bot,6,7);L(140,bot,lx,bot);T('Resistance R (wire, unknown)',220,bot-20,'#c03030');
+ L(lx,bot,lx,120);L(lx,90,lx,top);O(lx,105,15,'#fff2cc');T('A',lx,109);T('+',lx+24,90);T('\u2212',lx+24,130);
+ if(S.key){c.strokeStyle='#c00';for(const[a,b,y]of[[125,100,top],[275,250,top],[335,370,bot]]){const h=a>b?8:-8;L(a,y,b,y);L(b+h,y-5,b,y,b+h,y+5)}c.strokeStyle='#111'}
+ const vy=222;let vx,t1;if(S.conn=='A'){vx=220;t1=[140,bot];L(140,bot,140,vy,vx-15,vy)}else{vx=157;t1=[lx,68];L(lx,68,14,68,14,vy,vx-15,vy)}
+ L(vx+15,vy,300,vy,300,bot);O(t1[0],t1[1],3,'#111');O(300,bot,3,'#111');O(vx,vy,15,'#d9ecff');T('V',vx,vy+4);T('+',vx-26,vy+12);T('\u2212',vx+26,vy+12)}
+
+/* ---------- record, graph ---------- */
+function fb(id,t,cls){const e=$(id);e.textContent=t;e.className='fb '+(cls||'')}
+const clamp=t=>Math.max(-.03,Math.min(1.08,t));
+function rec(){if(!S.key)return fb('fo','The key is open \u2013 close it first.','w');
+ if(!settled())return fb('fo','Needles still swinging \u2013 wait.','w');
+ const v=parseFloat($('ev').value),i=parseFloat($('ei').value);if(isNaN(v)||isNaN(i))return fb('fo','Enter both readings.','bad');
+ const[fv,,lv]=VR[S.vr],[fa,,la]=AR[S.ar],ev=v-clamp(M.V.tg)*fv,ei=i-clamp(M.A.tg)*fa*1000,p=[];
+ if(Math.abs(ev)>lv*1.0001)p.push('voltmeter too '+(ev>0?'high':'low'));if(Math.abs(ei)>la*1000.1)p.push('ammeter too '+(ei>0?'high':'low'));
+ if(p.length)return fb('fo','\u2717 Re-read: '+p.join(' and ')+'. Tap a meter to zoom (error must be \u2264 1 LC).','bad');
+ fb('fo','\u2713 '+(Math.abs(ev)<=lv/2&&Math.abs(ei)<=la*500?'Excellent':'Good')+' reading!','ok');if(!i)return;
+ S.data.push([v,i]);graph()}
+function graph(){const cv=$('cg'),c=cv.getContext('2d'),W=430,H=290,Lm=58,B=45,T=20,Rm=15;cv.width=W;cv.height=H;c.fillStyle='#fff';c.fillRect(0,0,W,H);
+ S.fit=null;const d=S.data,xs=d.map(a=>a[1]),ys=d.map(a=>a[0]),nice=x=>{if(x<=0)return 1;const e=10**Math.floor(Math.log10(x));for(const m of[1,1.5,2,2.5,3,4,5,6,8,10])if(m*e>=x)return m*e},
+ xm=xs.length?nice(Math.max(...xs)*1.1):1,ym=ys.length?nice(Math.max(...ys)*1.1):1,px=x=>Lm+(W-Lm-Rm)*x/xm,py=y=>H-B-(H-B-T)*y/ym;
+ c.strokeStyle='#e0e0e0';c.fillStyle='#111';c.font='9px sans-serif';c.textAlign='center';
+ for(let k=0;k<=5;k++){const gx=xm*k/5,gy=ym*k/5;c.beginPath();c.moveTo(px(gx),H-B);c.lineTo(px(gx),T);c.moveTo(Lm,py(gy));c.lineTo(W-Rm,py(gy));c.stroke();
+  c.fillText(+gx.toFixed(4),px(gx),H-B+12);c.textAlign='right';c.fillText(+gy.toFixed(4),Lm-5,py(gy)+3);c.textAlign='center'}
+ c.strokeStyle='#000';c.lineWidth=2;c.beginPath();c.moveTo(Lm,T);c.lineTo(Lm,H-B);c.lineTo(W-Rm,H-B);c.stroke();
+ c.font='bold 11px sans-serif';c.fillText('I (mA)',W/2,H-10);c.save();c.translate(13,H/2);c.rotate(-PI/2);c.fillText('V (volt)',0,0);c.restore();
+ c.fillStyle='#1f5fd0';xs.forEach((x,k)=>{c.beginPath();c.arc(px(x),py(ys[k]),3.5,0,7);c.fill()});
+ const n=xs.length,sx=xs.reduce((a,b)=>a+b,0),sy=ys.reduce((a,b)=>a+b,0),den=n*xs.reduce((a,b)=>a+b*b,0)-sx*sx;let t='';
+ if(n>=2&&Math.abs(den)>1e-12){const b=(n*xs.reduce((a,x,k)=>a+x*ys[k],0)-sx*sy)/den,a=(sy-b*sx)/n;c.strokeStyle='#d02020';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(px(0),py(a));c.lineTo(px(xm),py(a+b*xm));c.stroke();S.fit=b*1000;t='Best-fit slope R = '+(b*1000).toFixed(2)+' \u03a9   mean V/I = '+(1000*ys.reduce((q,y,k)=>q+y/xs[k],0)/n).toFixed(2)+' \u03a9'}
+ $('fit').innerHTML='<b>'+t+'</b>';$('tb').innerHTML=d.map((r,k)=>`<tr><td>${k+1}<td>${r[0]}<td>${r[1]}<td>${(1000*r[0]/r[1]).toFixed(2)}</tr>`).join('')}
+function newR(){mkWire();S.data=[];S.fit=null;diams=[];ze=null;lenM=null;G.d=W.d;G.dl=+(W.d+rg()*.003).toFixed(4);G.wire=0;G.z=zerr($('zc2').checked);G.turn=300;
+ $('gt').innerHTML='';$('gm').innerHTML='';$('res').textContent='';$('ml').innerHTML='';graph();fb('fo','New wire fitted \u2013 take fresh readings.');ref();gd();mdraw()}
+function reveal(){const Ra=rA(),Rv=rV(),R=S.R;alert(`True R = ${R.toFixed(2)} \u03a9\nConnection A: V/I \u2248 R||Rv = ${(R*Rv/(R+Rv)).toFixed(2)} \u03a9 (low)\nConnection B: V/I \u2248 R+Ra = ${(R+Ra).toFixed(2)} \u03a9 (high)\nRv = ${Rv} \u03a9, Ra = ${Ra.toFixed(2)} \u03a9`+(S.fit?`\nYour slope = ${S.fit.toFixed(2)} \u03a9 (${(100*(S.fit-R)/R).toFixed(1)} % error)`:''))}
+
+/* ---------- screw gauge (pitch 1 mm, 100 div, LC 0.01 mm) ---------- */
+const LC=.01,zerr=on=>on?LC*(Math.random()<.5?-1:1)*(2+Math.floor(Math.random()*5)):0;
+const G={z:zerr(1),wire:0,d:W.d,turn:300};G.dl=+(G.d+rg()*.003).toFixed(4);
+const rmin=()=>G.z+(G.wire?G.dl:0),gr=()=>Math.max(G.turn*LC,rmin()),grip=()=>G.turn*LC<=rmin()+1e-9;
+function sg(cv,w,gz=1){const s=w/780,lw=b=>b*Math.pow(s*gz,-.6),Y=150,K=36,XA=110,XB=351,r=gr(),g=r-G.z,x0=XB-G.z*K,xe=x0+r*K,tip=XA+g*K;
+ cv.width=w;cv.height=320*s;const c=cv.getContext('2d');c.scale(s,s);c.fillStyle='#eef2f6';c.fillRect(0,0,780,320);if(gz>1){c.translate(390,150);c.scale(gz,gz);c.translate(-(xe+30),-Y)}
+ const R=(x,y,a,b,f)=>{c.fillStyle=f;c.fillRect(x,y,a,b);c.strokeStyle='#333';c.lineWidth=lw(1);c.strokeRect(x,y,a,b)},
+ L=(a,b,d,e,w2=1,col='#222')=>{c.strokeStyle=col;c.lineWidth=lw(w2);c.beginPath();c.moveTo(a,b);c.lineTo(d,e);c.stroke()},
+ T=(t,x,y,sz=8,al='center',col='#222')=>{c.fillStyle=col;c.font='bold '+sz+'px sans-serif';c.textAlign=al;c.textBaseline='middle';c.fillText(t,x,y)};
+ R(30,50,45,212,'#566574');R(30,50,XB-54,36,'#566574');R(XB-26,50,26,212,'#566574');R(75,Y-9,35,18,'#aab3bd');
+ if(G.wire){const rd=G.dl*K/2;c.fillStyle='#b8742a';c.beginPath();c.arc(XA+rd,Y,rd,0,7);c.fill()}
+ R(tip,Y-7,XB-26-tip,14,'#c9d0d7');R(XB-4,Y-36,6*K+18,72,'#f1ecd9');L(XB-4,Y,xe,Y,1.3);
+ for(let n=0;n<14;n+=2){const x=x0+n*.5*K;if(x<XB-3||x>xe-.6)continue;L(x,Y,x,Y-15,1.1);T(n/2,x,Y-25)}
+ T('SCREW GAUGE   pitch 1 mm \u2022 100 circular divisions',10,16,10,'left');T('anvil',92,Y+26);T('sleeve (main scale, mm)',XB+4,Y+50,8,'left','#555');
+ R(xe,Y-60,155,120,'#cdd3da');R(xe,Y-60,22,120,'#e7eaee');R(xe+155,Y-46,36,92,'#8e98a3');
+ const f=(((r%1)+1)%1)/LC,j0=Math.floor(f);
+ for(let j=j0-14;j<=j0+14;j++){const off=(j-f)*5;if(Math.abs(off)>56)continue;const mj=((j%100)+100)%100%10==0;L(xe,Y+off,xe+(mj?15:9),Y+off,mj?1:.8);if(mj)T(((j%100)+100)%100,xe+28,Y+off,8,'left')}
+ L(xe,Y,xe+22,Y,.9,'#d01010');T('thimble (circular scale)',xe+8,Y+74,8,'left','#555');
+ if(grip())T(G.wire?'Ratchet clicking \u2013 wire gripped, reading locked':'Jaws closed (no wire)',10,300,9,'left','#a03000')}
+function gd(){$('tr').value=G.turn;$('wb').textContent=G.wire?'Remove wire':'Insert wire';$('gs').textContent=grip()?'\u2022 Ratchet clicking \u2013 reading locked.':'';sg($('cs'),620);if(zk=='G')sg($('zc'),1100,GZ)}
+function gn(d){G.turn=Math.max(-100,Math.min(600,+(G.turn+d).toFixed(3)));gd()}
+function togWire(){if(G.wire)G.wire=0;else{if(Math.max(G.turn*LC,G.z)-G.z<G.dl+.0005)return fb('fg','Jaws too close \u2013 open the thimble first.','w');G.wire=1}gd()}
+function gze(){if(G.wire)return fb('fg','Remove the wire and close the jaws first.','w');if(!grip())return fb('fg','Close the jaws completely (ratchet clicks).','w');
+ const z=parseFloat($('ez').value);if(isNaN(z))return fb('fg','Enter e.g. +0.03 or -0.02','bad');
+ if(Math.abs(z-G.z)<=1.01*LC){ze=z;fb('fg','\u2713 Zero error '+(z>=0?'+':'')+z.toFixed(2)+' mm recorded. Subtract it from every reading.','ok')}
+ else fb('fg','\u2717 Not right. CSR \u2264 50 \u2192 error = +CSR\u00d7LC; CSR > 50 \u2192 error = \u2212(100\u2212CSR)\u00d7LC.','bad')}
+function grec(){if(!G.wire)return fb('fg','Insert the wire first.','w');if(!grip())return fb('fg','Tighten with the ratchet until it clicks, then read.','w');
+ const m=parseFloat($('em').value),c=parseFloat($('ec').value);if(isNaN(m)||isNaN(c))return fb('fg','Enter MSR and CSR.','bad');
+ if(Math.abs(m-Math.round(m))>1e-6||m<0)return fb('fg','MSR must be a multiple of the pitch (1 mm).','bad');if(c<0||c>=100)return fb('fg','CSR must be 0\u201399.','bad');
+ const o=m+c*LC,e=o-gr();if(Math.abs(e)>1.01*LC)return fb('fg','\u2717 Re-read: too '+(e>0?'high':'low')+'. Check the sleeve mark just uncovered and the thimble division on the red line.','bad');
+ const d=o-(ze||0);diams.push([m,c,o,d]);const n=diams.length;
+ fb('fg','\u2713 '+(Math.abs(e)<=.51*LC?'Excellent':'Good')+' reading!'+(G.z&&ze===null?' \u26a0 zero error not recorded!':'')+' Move the wire to a new spot and repeat.',G.z&&ze===null?'w':'ok');
+ $('gt').innerHTML=diams.map((r,k)=>`<tr><td>${k+1}<td>${r[0]}<td>${r[1]}<td>${r[2].toFixed(2)}<td>${r[3].toFixed(3)}</tr>`).join('');
+ $('gm').innerHTML='<b>Mean d = '+(diams.reduce((a,r)=>a+r[3],0)/n).toFixed(4)+' mm ('+n+' readings)</b>'}
+
+/* ---------- metre scale, length, rho ---------- */
+function mdr(cv,w){const s=w/700,lw=b=>b*Math.pow(s,-.6),c=cv.getContext('2d'),L=10,R=690,sp=680;cv.width=w;cv.height=300*s;c.scale(s,s);c.fillStyle='#f4f1e8';c.fillRect(0,0,700,300);
+ const ox=x=>L+x*sp/100,mx=x=>L+(x-mp)*sp/4;c.fillStyle='#f6e7a8';c.fillRect(L,52,sp,32);c.strokeStyle='#222';c.fillStyle='#222';c.font='7px sans-serif';c.textAlign='center';c.lineWidth=lw(1);
+ c.font='bold 11px sans-serif';c.textAlign='left';c.fillText('METRE SCALE \u2013 overview (0\u2013100 cm)',10,16);c.font='7px sans-serif';c.textAlign='center';
+ for(let k=0;k<=100;k++){const h=k%10==0?14:k%5==0?9:5;c.beginPath();c.moveTo(ox(k),52);c.lineTo(ox(k),52+h);c.stroke();if(k%10==0)c.fillText(k,ox(k),52+h+9)}
+ c.strokeStyle='#b87333';c.lineWidth=lw(4);c.beginPath();c.moveTo(ox(W.x1),44);c.lineTo(ox(W.x1+W.L),44);c.stroke();
+ c.strokeStyle='#d01010';c.lineWidth=lw(2);c.strokeRect(ox(mp),34,sp*4/100,54);
+ c.fillStyle='#a00';c.font='bold 11px sans-serif';c.textAlign='left';c.fillText('Magnifier: '+mp.toFixed(2)+' \u2013 '+(mp+4).toFixed(2)+' cm',10,112);
+ c.fillStyle='#f6e7a8';c.fillRect(L,195,sp,75);c.strokeStyle='#222';c.lineWidth=lw(1);c.fillStyle='#222';
+ for(let k=Math.ceil(mp*10-1e-9);k<=Math.floor((mp+4)*10+1e-9);k++){const x=mx(k/10),h=k%10==0?36:k%5==0?26:16;c.beginPath();c.moveTo(x,195);c.lineTo(x,195+h);c.stroke();
+  if(k%10==0){c.font='bold 13px sans-serif';c.textAlign='center';c.fillText(k/10,x,195+h+12)}}
+ const a=Math.max(L,mx(W.x1)),b=Math.min(R,mx(W.x1+W.L));if(b>a){c.fillStyle='#b87333';c.fillRect(a,163,b-a,32)}
+ c.strokeStyle='#3a210b';c.lineWidth=lw(2);for(const x of[mx(W.x1),mx(W.x1+W.L)])if(x>=L&&x<=R){c.beginPath();c.moveTo(x,159);c.lineTo(x,195);c.stroke()}}
+function mdraw(){mdr($('cm'),700);if(zk=='M')mdr($('zc'),1400)}
+function mb(d){mp=Math.max(0,Math.min(96,+(mp+d).toFixed(2)));$('ms').value=mp;mdraw()}
+function lrec(){const a=parseFloat($('l1').value),b=parseFloat($('l2').value);if(isNaN(a)||isNaN(b))return fb('fl','Enter both end readings (cm).','bad');
+ const ea=a-W.x1,eb=b-(W.x1+W.L),p=[];if(Math.abs(ea)>.1001)p.push('left end too '+(ea>0?'high':'low'));if(Math.abs(eb)>.1001)p.push('right end too '+(eb>0?'high':'low'));
+ if(p.length)return fb('fl','\u2717 Re-read: '+p.join(' and ')+'. Slide the magnifier to that end.','bad');
+ lenM=b-a;fb('fl','\u2713 Good readings!','ok');$('ml').innerHTML='<b>Length L = right \u2212 left = '+lenM.toFixed(2)+' cm</b>'}
+function useS(){if(S.fit==null)return $('res').textContent='Record at least 2 V\u2013I readings in the Ohm\'s Law tab first.';$('eR').value=S.fit.toFixed(2)}
+const dm=()=>diams.reduce((a,r)=>a+r[3],0)/diams.length;
+function rho(){if(!diams.length)return $('res').textContent='Record diameter readings with the screw gauge first.';
+ if(lenM===null)return $('res').textContent='Measure the length with the metre scale first.';const R=parseFloat($('eR').value);
+ if(isNaN(R))return $('res').textContent='Enter R (\u03a9) or press "Use slope".';
+ const d=dm(),A=PI*d*d/4,V=A*1e-2*lenM,r=R*A*1e-6/(lenM/100),nm=MAT.reduce((a,m)=>Math.abs(Math.log(r/m[1]))<Math.abs(Math.log(r/a[1]))?m:a);
+ $('res').textContent=`Mean diameter d = ${d.toFixed(4)} mm\nArea A = \u03c0d\u00b2/4 = ${A.toFixed(5)} mm\u00b2\nLength L = ${lenM.toFixed(2)} cm\nVolume = A\u00b7L = ${V.toFixed(4)} cm\u00b3\nResistance R = ${R.toFixed(2)} \u03a9\n\u03c1 = R\u00b7A/L = ${r.toExponential(3)} \u03a9\u00b7m\nClosest in table: ${nm[0]} (${nm[1].toExponential(2)})`}
+function revW(){alert(`Material: ${W.n} (\u03c1 = ${W.rho.toExponential(2)} \u03a9\u00b7m)\nDiameter: ${W.d} mm\nLength: ${W.L} cm (${W.x1} to ${(W.x1+W.L).toFixed(3)} cm on the scale)\nVolume: ${(PI*(W.d/10)**2/4*W.L).toFixed(4)} cm\u00b3\nR = \u03c1L/A = ${W.R.toFixed(3)} \u03a9`+(diams.length?`\nYour mean d: ${dm().toFixed(4)} mm (error ${(dm()-W.d).toFixed(4)})`:'')+(lenM!==null?`\nYour L: ${lenM.toFixed(2)} cm (error ${(lenM-W.L).toFixed(2)})`:''))}
+
+/* ---------- zoom overlay, tabs, loop ---------- */
+let GZ=1;
+function zoom(k){zk=k;GZ=1;$('ov').hidden=false;let b;
+ if(k=='G')b=[-10,-1,-.1,.1,1,10].map(d=>`<button onclick="gn(${d})">${d>0?'+':''}${d}</button>`).concat([1,2,3].map(z=>`<button onclick="GZ=${z};gd()">\u00d7${z}</button>`));
+ else if(k=='M')b=[-5,-1,-.1,.1,1,5].map(d=>`<button onclick="mb(${d})">${d>0?'+':''}${d} cm</button>`).concat([`<input type="range" min="0" max="96" step="0.05" value="${mp}" style="width:min(80vw,600px)" oninput="mp=+this.value;$('ms').value=mp;mdraw()">`]);
+ else b=[-1,-.1,.1,1].map(d=>`<button onclick="bump(${d})">Rh ${d>0?'+':''}${d}</button>`);
+ $('zb').innerHTML=b.join('')+'<button onclick="zk=null;$(\'ov\').hidden=true">Close</button>';
+ if(k=='G')gd();else if(k=='M')mdraw()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));const g=b.dataset.t=='g';$('o').hidden=g;$('g').hidden=!g;window.scrollTo(0,0);if(g){gd();mdraw()}});
+function loop(){for(const k of['V','A']){const m=M[k],a=-121*(m.th-m.tg)-9.9*m.om;m.om+=a*.016;m.th+=m.om*.016;
+  if(m.th<-.03){m.th=-.03;m.om*=-.25}if(m.th>1.08){m.th=1.08;m.om*=-.25}}
+ if(!$('o').hidden){dial($('cv'),'V',260);dial($('ca'),'A',260)}if(zk=='V'||zk=='A')dial($('zc'),zk,1100);requestAnimationFrame(loop)}
+window.onerror=(m,u,l)=>{const e=document.createElement('div');e.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c22;color:#fff;padding:8px;z-index:200;font:12px monospace';e.textContent='Error: '+m+' (line '+l+')';document.body.appendChild(e)};
+for(const f of[ref,graph,gd,mdraw])try{f()}catch(e){window.onerror(e.message,'',0)}
+loop();
+['Calibrating galvanometers…','Zeroing the screw gauge…','Cutting a wire to length…','Ready!'].forEach((t,i)=>setTimeout(()=>$('lt').textContent=t,i*700));
+setTimeout(()=>{$('ld').classList.add('out');setTimeout(()=>$('ld').remove(),600)},2900);
+</script></body></html>
