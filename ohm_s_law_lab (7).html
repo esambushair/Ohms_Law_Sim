@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ohm's Law Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f7;--fg:#1d2330;--card:#fff;--bd:#c9cfdb;--ac:#1f5fd0;--sub:#525d73;--tint:#eef3fc;--code:#f1f3f8;--ff:'Futura','Century Gothic','Jost',sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8ebf2;--card:#1d222b;--bd:#39404d;--ac:#6ea0ff;--sub:#9aa5ba;--tint:#242d3d;--code:#262c38}}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;font:14px/1.45 var(--ff);background:var(--bg);color:var(--fg)}
+nav{display:flex;position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);z-index:5}
+nav button{flex:1;padding:12px 8px;border:0;border-radius:0;background:none;color:var(--fg);font-weight:600;border-bottom:3px solid transparent;transition:color .15s,border-color .15s}
+nav button.on{border-color:var(--ac);color:var(--ac)}
+section{max-width:1220px;margin:auto;padding:12px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+#o{grid-template-columns:minmax(330px,390px) 1fr;align-items:start}
+@media(max-width:860px){#o{grid-template-columns:1fr}}
+.meters-pane{position:sticky;top:52px}
+@media(max-width:860px){.meters-pane{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}}
+.sub-nav{display:flex;gap:6px;background:var(--tint);padding:5px;border-radius:9px;border:1px solid var(--bd);margin-bottom:10px}
+.sub-nav button{flex:1;padding:8px 10px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--sub);font-weight:700;font-size:13px;transition:all .15s}
+.sub-nav button.on{background:var(--card);color:var(--ac);border-color:var(--bd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rh-panel{background:var(--tint);border:1px solid var(--bd);border-radius:9px;padding:12px;margin:8px 0}
+.obs-panel{background:var(--card);border:1px solid var(--bd);border-radius:9px;padding:12px;margin-top:10px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px}
+.c h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.c h4{margin:10px 0 4px;font-size:13px;color:var(--ac)}
+canvas{width:100%;display:block;border-radius:6px}
+button,select,input{font:inherit;padding:7px 9px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+button{cursor:pointer;font-weight:600}button:active{transform:translateY(1px)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input[type=range]{width:100%;padding:0}input[type=text]{width:90px}
+.r{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:5px 0}.fb{min-height:36px;margin:4px 0}
+table{width:100%;border-collapse:collapse;text-align:center}td,th{border-bottom:1px solid var(--bd);padding:4px}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
+#ov[hidden]{display:none}#zc{max-height:72vh;width:auto;max-width:100%;background:#fff}.ok{color:#0a7a2f}.bad{color:#c22}.w{color:#b86a00}
+@media(prefers-color-scheme:dark){.ok{color:#4cd97b}.bad{color:#ff6b6b}.w{color:#ffb74d}}
+
+/* Interactive Wiring Procedure Box */
+.wire-box{background:var(--tint);border:1px solid var(--bd);border-radius:8px;padding:9px;margin-bottom:8px}
+.wire-hdr{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;font-weight:700;font-size:13px;flex-wrap:wrap}
+.wire-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.w-chip{font-size:11.5px;padding:3px 7px;border-radius:6px;border:1px solid var(--bd);background:var(--card);color:var(--sub);font-weight:600}
+.w-chip.done{border-color:#0a7a2f;background:rgba(10,122,47,.12);color:#0a7a2f}
+@media(prefers-color-scheme:dark){.w-chip.done{color:#4cd97b}}
+.w-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--code);color:var(--sub)}
+.w-badge.ready{background:#0a7a2f;color:#fff}
+.w-badge.err{background:#c22;color:#fff}
+.wire-fb{font-size:12.5px;padding:6px 8px;border-radius:6px;background:var(--card);border:1px solid var(--bd);min-height:34px;line-height:1.35}
+.wire-fb.bad{border-color:#c22;background:rgba(204,34,34,.08)}
+.wire-fb.ok{border-color:#0a7a2f;background:rgba(10,122,47,.08)}
+#cc{touch-action:none;cursor:crosshair;user-select:none}
+
+/* Help & Quick-Help UI */
+.hb{width:24px;height:24px;padding:0;border-radius:50%;font-size:12px;font-weight:700;line-height:1;background:var(--tint);color:var(--ac);border:1px solid var(--ac);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+.hb:hover{background:var(--ac);color:#fff}
+#h{grid-template-columns:1fr}
+.h-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.step-row{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin:6px 0}
+.step-box{background:var(--tint);border:1px solid var(--bd);border-radius:8px;padding:9px}
+.step-num{display:inline-block;background:var(--ac);color:#fff;font-weight:700;font-size:11px;padding:2px 7px;border-radius:99px;margin-bottom:4px}
+.formula{background:var(--code);border-left:3px solid var(--ac);padding:7px 10px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;margin:6px 0;overflow-x:auto}
+ul.h-list,ol.h-list{margin:4px 0 8px;padding-left:18px}
+ul.h-list li,ol.h-list li{margin-bottom:4px}
+.sim-box{background:var(--tint);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-top:8px}
+.sim-out{margin-top:6px;padding:7px 9px;background:var(--card);border-radius:6px;border:1px solid var(--bd);font-family:ui-monospace,monospace;font-size:12.5px}
+details{border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--card)}
+summary{font-weight:600;cursor:pointer}
+details p{margin:6px 0 0;color:var(--sub)}
+.muted{color:var(--sub);font-size:13px}
+@keyframes flashCard{0%{box-shadow:0 0 0 3px var(--ac)}100%{box-shadow:none}}
+.flash{animation:flashCard 1.6s ease-out}
+
+/* Blueprint Start Menu & Boot Overlay */
+#ld{position:fixed;inset:0;z-index:99;background:radial-gradient(circle at 20% 20%,#1b54c4 0%,#0d275c 55%,#071636 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;overflow-y:auto;transition:opacity .45s ease,transform .45s ease}
+#ld.out{opacity:0;transform:scale(1.02);pointer-events:none}
+.bp-bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.42}
+.bp-pulse{stroke-dasharray:10 180;animation:pulseFlow 5s linear infinite}
+@keyframes pulseFlow{from{stroke-dashoffset:190}to{stroke-dashoffset:0}}
+.bp-float{animation:floatSlow 6s ease-in-out infinite}
+@keyframes floatSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.ld-inner{position:relative;z-index:2;max-width:860px;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.ld-boot{display:flex;flex-direction:column;align-items:center;gap:12px;transition:opacity .25s ease}
+.sp{width:64px;height:64px;border-radius:50%;border:4px solid rgba(255,255,255,.22);border-top-color:#7ce0ff;animation:rot .85s linear infinite;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;box-shadow:0 0 24px rgba(124,224,255,.35)}
+.sp b{animation:rot .85s linear infinite reverse}
+.bar{width:220px;height:7px;border-radius:5px;background:rgba(255,255,255,.2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7ce0ff,#fff);animation:fill .55s cubic-bezier(.22,1,.36,1) forwards}
+.menu-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;animation:menuIn .4s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes menuIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.menu-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;background:rgba(124,224,255,.14);border:1px solid rgba(124,224,255,.38);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#aeeaff}
+.menu-title{margin:0;font-size:clamp(26px,4.5vw,38px);font-weight:700;letter-spacing:-.01em;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.menu-sub{margin:0;max-width:580px;color:rgba(232,242,255,.86);font-size:14.5px}
+.menu-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;width:100%;margin-top:4px;text-align:left}
+.m-card{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.26);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease}
+.m-card:hover{transform:translateY(-4px);background:rgba(255,255,255,.16);border-color:#7ce0ff;box-shadow:0 14px 32px rgba(4,14,38,.45)}
+.m-card-top{display:flex;align-items:center;gap:12px}
+.m-ico{width:50px;height:50px;border-radius:12px;background:rgba(124,224,255,.16);border:1px solid rgba(124,224,255,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.m-card h3{margin:0;font-size:18px;color:#fff}
+.m-card p{margin:0;font-size:13.5px;color:rgba(230,240,255,.85);line-height:1.45}
+.m-tags{display:flex;flex-wrap:wrap;gap:5px}
+.m-tags span{font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(7,22,54,.45);border:1px solid rgba(124,224,255,.25);color:#bfefff;font-weight:600}
+.m-cta{width:100%;padding:10px 14px;border-radius:10px;border:0;background:#fff;color:#0e2b63;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,.22);transition:background .15s,transform .15s}
+.m-card:hover .m-cta{background:#7ce0ff;color:#071636}
+.menu-guide-link{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:background .15s}
+.menu-guide-link:hover{background:rgba(255,255,255,.22)}
+.audio-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;background:rgba(7,22,54,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(124,224,255,.32);border-radius:12px;padding:9px 14px;width:100%;max-width:740px}
+.audio-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:background .15s}
+.audio-btn:hover{background:rgba(124,224,255,.25);border-color:#7ce0ff}
+.audio-btn.primary{background:#7ce0ff;color:#071636;border-color:#7ce0ff}
+.audio-btn.primary:hover{background:#aeeaff}
+.audio-track{font-size:12px;color:#bfefff;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.nav-audio-grp{display:flex;align-items:center;border-left:1px solid var(--bd);flex:0 0 auto}
+.nav-audio-btn{flex:0 0 auto!important;padding:12px 10px!important;font-size:12.5px}
+.author-byline{margin:-6px 0 2px;font-size:15px;font-weight:700;letter-spacing:.04em;color:#7ce0ff;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.cred-hero{background:linear-gradient(135deg,#1b54c4,#0d275c);color:#fff;border-radius:12px;padding:20px;margin-bottom:10px;border:1px solid rgba(124,224,255,.35)}
+.cred-hero h2{margin:0 0 6px;font-size:22px}
+.cred-hero p{margin:0;color:rgba(232,242,255,.9)}
+@keyframes rot{to{transform:rotate(360deg)}}@keyframes fill{to{width:100%}}
+</style></head><body>
+
+<div id="ld">
+ <svg class="bp-bg" viewBox="0 0 1200 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+   <pattern id="bpGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(160,210,255,0.16)" stroke-width="1"/>
+    <path d="M 200 0 L 0 0 0 200" fill="none" stroke="rgba(160,210,255,0.28)" stroke-width="1.2"/>
+   </pattern>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bpGrid)"/>
+  <!-- Top-left Ohm's Law Circuit Schematic -->
+  <g stroke="#8be4ff" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M 70 110 H 150 M 182 110 H 275 M 310 110 H 390 V 165 L 402 173 L 378 185 L 402 197 L 378 209 L 390 217 V 270 H 295 L 285 258 L 271 282 L 257 258 L 243 282 L 229 258 L 219 270 H 70 V 210 M 70 174 V 110"/>
+   <line x1="150" y1="90" x2="150" y2="130" stroke-width="3"/>
+   <line x1="160" y1="100" x2="160" y2="120" stroke-width="4"/>
+   <line x1="172" y1="90" x2="172" y2="130" stroke-width="3"/>
+   <line x1="182" y1="100" x2="182" y2="120" stroke-width="4"/>
+   <path d="M 282 96 A 16 16 0 0 0 282 124 M 303 96 A 16 16 0 0 1 303 124"/>
+   <circle cx="292.5" cy="110" r="3.5" fill="#8be4ff"/>
+   <circle cx="70" cy="192" r="18"/>
+   <path d="M 210 270 V 330 H 239 M 275 330 H 304 V 270"/>
+   <circle cx="257" cy="330" r="18"/>
+   <path class="bp-pulse" d="M 70 110 H 390 V 270 H 70 Z" stroke="#ffffff" stroke-width="3.5"/>
+  </g>
+  <g fill="#aeeaff" font-family="Futura, Jost, sans-serif" font-weight="700" font-size="14">
+   <text x="64" y="197">A</text>
+   <text x="251" y="335">V</text>
+   <text x="412" y="196" font-size="13">Rh</text>
+   <text x="282" y="84" font-size="12">(K)</text>
+  </g>
+  <!-- Bottom-right Screw Gauge / Micrometer Blueprint -->
+  <g transform="translate(760,445)" stroke="#8be4ff" fill="none" stroke-width="2">
+   <path d="M 40 35 H 165 V 175 H 40 C 12 175 12 35 40 35 Z"/>
+   <rect x="40" y="92" width="32" height="26"/>
+   <rect x="112" y="95" width="53" height="20"/>
+   <rect x="165" y="76" width="110" height="58"/>
+   <line x1="165" y1="105" x2="275" y2="105" stroke-width="1.5"/>
+   <path d="M 185 105 V 92 M 205 105 V 92 M 225 105 V 92 M 245 105 V 92 M 265 105 V 92"/>
+   <rect x="275" y="60" width="95" height="90" rx="4"/>
+   <rect x="370" y="72" width="28" height="66" rx="4"/>
+   <path d="M 275 75 H 292 M 275 90 H 288 M 275 105 H 295 M 275 120 H 288 M 275 135 H 292"/>
+   <circle cx="92" cy="105" r="14" stroke-dasharray="4 3"/>
+  </g>
+  <!-- Floating Physics Equations -->
+  <g class="bp-float" fill="rgba(190,235,255,0.65)" font-family="Futura, Jost, sans-serif" font-weight="700">
+   <text x="840" y="115" font-size="28">V = I &middot; R</text>
+   <text x="880" y="155" font-size="19">&rho; = (R &middot; A) / L</text>
+   <text x="115" y="540" font-size="22">LC = Pitch / N</text>
+   <text x="145" y="582" font-size="18">A = &pi;d&sup2; / 4</text>
+   <text x="535" y="88" font-size="16" opacity=".7">R<tspan dy="4" font-size="12">eq</tspan><tspan dy="-4"> = R</tspan><tspan dy="4" font-size="12">1</tspan><tspan dy="-4"> + R</tspan><tspan dy="4" font-size="12">2</tspan></text>
+  </g>
+  <!-- Top-right Analog Dial Arc -->
+  <g transform="translate(1030,275)" stroke="#8be4ff" fill="none" stroke-width="1.8" opacity=".75">
+   <path d="M -75 25 A 85 85 0 0 1 75 25"/>
+   <line x1="0" y1="35" x2="36" y2="-38" stroke="#fff" stroke-width="2.2"/>
+   <circle cx="0" cy="35" r="6" fill="#8be4ff"/>
+  </g>
+ </svg>
+
+ <div class="ld-inner">
+  <div id="ld-boot" class="ld-boot">
+   <div class="sp"><b>&Omega;</b></div>
+   <h2 style="margin:0;font-size:24px">Ohm's Law &amp; Wire Lab</h2>
+   <div style="font-size:13.5px;font-weight:700;color:#7ce0ff">By Esam Bushair Mohammad</div>
+   <div class="bar"><i></i></div>
+   <p id="lt" style="margin:0;opacity:.85;font-size:13px">Initializing instruments&hellip;</p>
+  </div>
+
+  <div id="ld-menu" class="menu-wrap" hidden>
+   <div class="menu-badge">&#9889; Interactive Physics Laboratory</div>
+   <h1 class="menu-title">Ohm's Law &amp; Screw Gauge Lab</h1>
+   <div class="author-byline">By Esam Bushair Mohammad</div>
+   <p class="menu-sub">Choose an experiment module below to begin. Both modules share the same unknown metallic wire so you can determine its resistance and identify its alloy.</p>
+
+   <div class="menu-cards">
+    <div class="m-card" onclick="launchApp('o')">
+     <div>
+      <div class="m-card-top">
+       <div class="m-ico">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#7ce0ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+         <circle cx="16" cy="16" r="12"/>
+         <path d="M9 19a8 8 0 0 1 14 0"/>
+         <line x1="16" y1="20" x2="21" y2="11" stroke="#fff"/>
+        </svg>
+       </div>
+       <div>
+        <h3>Ohm's Law Simulation</h3>
+        <div style="font-size:12px;color:#9ee6ff;font-weight:600">Circuit Wiring &bull; V&ndash;I Characteristic</div>
+       </div>
+      </div>
+      <p style="margin-top:10px">Wire the battery, plug key, rheostat, ammeter, and voltmeter by dragging leads between terminals, vary resistance <i>Rh</i>, and plot <i>V</i> vs. <i>I</i> to find unknown resistance <b>R</b>.</p>
+     </div>
+     <div class="m-tags"><span>Drag-to-Wire Circuit</span><span>Voltmeter &amp; Ammeter</span><span>V&ndash;I Best-Fit Graph</span></div>
+     <button class="m-cta" type="button">Start Ohm's Law Simulation &rarr;</button>
+    </div>
+
+    <div class="m-card" onclick="launchApp('g')">
+     <div>
+      <div class="m-card-top">
+       <div class="m-ico">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#7ce0ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M8 7h9v18H8a6 6 0 0 1 0-18z"/>
+         <rect x="17" y="11" width="11" height="10" rx="2"/>
+         <line x1="12" y1="16" x2="17" y2="16" stroke="#fff"/>
+        </svg>
+       </div>
+       <div>
+        <h3>Screw Gauge &amp; Wire Lab</h3>
+        <div style="font-size:12px;color:#9ee6ff;font-weight:600">Micrometer &bull; Metre Scale &bull; Resistivity (&rho;)</div>
+       </div>
+      </div>
+      <p style="margin-top:10px">Determine zero error, measure the wire's diameter <b>d</b> to 0.01 mm precision with the ratchet screw gauge, measure length <b>L</b> on the metre scale, and calculate specific resistance <b>&rho;</b>.</p>
+     </div>
+     <div class="m-tags"><span>Screw Gauge (0.01 mm)</span><span>Sliding Magnifier</span><span>Alloy Identification</span></div>
+     <button class="m-cta" type="button">Start Screw Gauge &amp; Wire Lab &rarr;</button>
+    </div>
+   </div>
+
+   <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+    <button class="menu-guide-link" type="button" onclick="launchApp('h')">&#128218; Open Lab Manual &amp; Step-by-Step Guide</button>
+    <button class="menu-guide-link" type="button" onclick="launchApp('c')">&#127942; Credits</button>
+   </div>
+
+   <div class="audio-bar" aria-label="Menu Music and Sound Effects Controls">
+    <button type="button" id="bgm-play-btn" class="audio-btn primary" onclick="toggleBgm()">&#127925; Menu Music: OFF</button>
+    <span id="bgm-name" class="audio-track" title="Place main_menu_music.mp3 (or .wav/.ogg/.m4a) in the same folder as index.html">Track: main_menu_music</span>
+    <input type="file" id="bgm-file" accept="audio/*" hidden onchange="loadMenuMusic(this)">
+    <button type="button" class="audio-btn" onclick="$('bgm-file').click()">&#128194; Upload Custom Track</button>
+    <label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#d8f3ff">
+     Vol <input id="bgm-vol" type="range" min="0" max="1" step="0.05" value="0.55" style="width:68px" oninput="setBgmVol(this.value)">
+    </label>
+    <label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#d8f3ff;cursor:pointer">
+     <input id="bgm-loop" type="checkbox" checked onchange="setBgmLoop(this.checked)"> Loop
+    </label>
+    <label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#d8f3ff;cursor:pointer">
+     <input id="bgm-keep" type="checkbox"> Keep playing in lab
+    </label>
+    <button type="button" id="menu-sfx-btn" class="audio-btn" onclick="SFX.toggle()">&#128266; SFX On</button>
+   </div>
+  </div>
+ </div>
+</div>
+<audio id="bgm-audio" loop preload="auto"></audio>
+ <nav>
+ <button class="menu-nav-btn" onclick="openMenu()" title="Return to Start Menu" style="flex:0 0 auto;padding:12px 14px;border-right:1px solid var(--bd)">&#8962; Menu</button>
+ <button class="on" data-t="o">Ohm's Law Lab</button>
+ <button data-t="p">V&ndash;I Graph &amp; Table <span id="nav-pts" class="w-badge" style="margin-left:4px">0</span></button>
+ <button data-t="g">Wire Lab</button>
+ <button data-t="h">Help &amp; Guide</button>
+ <button data-t="c">Credits</button>
+ <div class="nav-audio-grp">
+  <button type="button" id="nav-bgm-btn" class="nav-audio-btn" onclick="toggleBgm()" title="Toggle Menu Music On/Off">&#127925; Music: OFF</button>
+  <button type="button" id="nav-sfx-btn" class="nav-audio-btn" onclick="SFX.toggle()" title="Toggle Sound Effects">&#128266; SFX</button>
+ </div>
+</nav>
+
+<!-- ==================== TAB 1: OHM'S LAW LAB (TWO-PANE) ==================== -->
+<section id="o">
+ <div class="c meters-pane">
+  <div>
+   <h3><span>Voltmeter &mdash; tap to zoom</span><button class="hb" title="How to read the Voltmeter" onclick="goHelp('h-meters')">?</button></h3>
+   <canvas id="cv" onclick="zoom('V')"></canvas>
+   <div class="r"><select id="vr" style="width:100%" onchange="S.vr=+this.value;ref()"><option value="0">Range: 0&ndash;3 V (LC 0.05 V)<option value="1">Range: 0&ndash;10 V (LC 0.2 V)<option value="2">Range: 0&ndash;15 V (LC 0.5 V)</select></div>
+  </div>
+  <div style="margin-top:10px">
+   <h3><span>Ammeter &mdash; tap to zoom</span><button class="hb" title="How to read the Ammeter" onclick="goHelp('h-meters')">?</button></h3>
+   <canvas id="ca" onclick="zoom('A')"></canvas>
+   <div class="r"><select id="ar" style="width:100%" onchange="S.ar=+this.value;ref()"><option value="0">Range: 0&ndash;100 mA (LC 1 mA)<option value="1">Range: 0&ndash;500 mA (LC 5 mA)<option value="2">Range: 0&ndash;1000 mA (LC 10 mA)</select></div>
+  </div>
+ </div>
+
+ <div class="c">
+  <div class="sub-nav" role="tablist">
+   <button id="sub-btn-diag" class="on" onclick="setOhmView('diag')">1. Circuit Wiring Diagram <span id="sub-wire-badge" class="w-badge" style="margin-left:4px">0/7</span></button>
+   <button id="sub-btn-ctrl" onclick="setOhmView('ctrl')">2. Rheostat &amp; Readings</button>
+  </div>
+
+  <!-- Sub-view A: Spacious Interactive Circuit Diagram -->
+  <div id="ohm-view-diag">
+   <h3><span>Interactive Circuit Assembly</span><button class="hb" title="Interactive terminal wiring & Connection A vs B" onclick="goHelp('h-circuit')">?</button></h3>
+   <div class="wire-box" id="wire-panel">
+    <div class="wire-hdr">
+     <span>&#128268; Drag Terminals to Wire <span id="w-prog" class="w-badge">0 / 7 Leads</span> <span id="w-err-cnt" class="w-badge">0 Mistakes</span></span>
+     <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button id="btn-clear-fault" style="padding:4px 8px;font-size:12px" onclick="clearFault()" hidden>Clear Fault</button>
+      <button style="padding:4px 8px;font-size:12px" onclick="autoWire()">Auto-Wire All</button>
+      <button style="padding:4px 8px;font-size:12px" onclick="resetWire()">Reset Wiring</button>
+      <button style="padding:4px 8px;font-size:12px" onclick="zoom('REF')">Reference Diagram</button>
+     </div>
+    </div>
+    <div class="wire-chips" id="w-list"></div>
+    <div class="wire-fb" id="w-fb">Drag from any glowing brass terminal (e.g., <b>E+</b>) to its matching terminal (<b>A+</b>), or tap two terminals in sequence.</div>
+   </div>
+   <canvas id="cc" title="Drag from one terminal node to another to connect wires"></canvas>
+   <div class="r" style="margin-top:8px;justify-content:space-between">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+     <button id="kb" onclick="togKey()" disabled>Key (K): LOCKED</button>
+     <select id="conn-sel-diag" onchange="changeConn(this.value)"><option value="A">Conn. A: V across R<option value="B">Conn. B: V across A+R</select>
+    </div>
+    <button style="background:var(--ac);color:#fff;border-color:var(--ac)" onclick="setOhmView('ctrl')">Proceed to Rheostat &amp; Readings &rarr;</button>
+   </div>
+  </div>
+
+  <!-- Sub-view B: Spacious Rheostat Controls & Observation Entry -->
+  <div id="ohm-view-ctrl" hidden>
+   <h3><span>Circuit Power &amp; Rheostat Control</span><button class="hb" title="Adjusting Rheostat & Recording Readings" onclick="goHelp('h-ohm-obs')">?</button></h3>
+   <div class="r" style="justify-content:space-between;background:var(--code);padding:8px 10px;border-radius:8px;border:1px solid var(--bd)">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+     <button id="kb2" onclick="togKey()" disabled>Key (K): LOCKED</button>
+     <label>Battery E: <select id="ee" onchange="S.E=+this.value;ref()"><option>1.5<option>3<option>4.5<option selected>6<option>9</select> V</label>
+     <select id="conn-sel-ctrl" onchange="changeConn(this.value)"><option value="A">Conn. A: V across R<option value="B">Conn. B: V across A+R</select>
+    </div>
+    <button style="font-size:12px" onclick="setOhmView('diag')">&larr; Edit Circuit Wiring</button>
+   </div>
+
+   <div class="rh-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+     <span style="font-size:15px">Rheostat Resistance <b>Rh = <span id="rv" style="color:var(--ac)">100.0</span> &Omega;</b></span>
+     <span class="muted" style="font-size:12px">Slide or fine-tune to vary V &amp; I</span>
+    </div>
+    <input id="rh" type="range" min="0" max="100" step="0.1" value="100" style="height:26px" oninput="S.rh=+this.value;ref()">
+    <div class="r" style="margin-top:8px">
+     <button style="flex:1" onclick="bump(-5)">&minus;5 &Omega;</button>
+     <button style="flex:1" onclick="bump(-1)">&minus;1 &Omega;</button>
+     <button style="flex:1" onclick="bump(-.1)">&minus;0.1 &Omega;</button>
+     <button style="flex:1" onclick="bump(.1)">+0.1 &Omega;</button>
+     <button style="flex:1" onclick="bump(1)">+1 &Omega;</button>
+     <button style="flex:1" onclick="bump(5)">+5 &Omega;</button>
+    </div>
+    <div id="wn" class="bad" style="font-weight:700;margin-top:4px"></div>
+   </div>
+
+   <div class="obs-panel">
+    <h3><span>Record Meter Observation</span><span id="obs-count-pill" class="w-badge">0 readings recorded</span></h3>
+    <div class="r" style="gap:10px;margin:8px 0">
+     <label style="font-weight:600">Voltmeter V (volt): <input id="ev" type="text" inputmode="decimal" placeholder="e.g. 1.45" style="width:110px;padding:8px"></label>
+     <label style="font-weight:600">Ammeter I (mA): <input id="ei" type="text" inputmode="decimal" placeholder="e.g. 42" style="width:110px;padding:8px"></label>
+    </div>
+    <div class="r">
+     <button style="background:var(--ac);color:#fff;border-color:var(--ac)" onclick="rec()">Check &amp; Record Reading</button>
+     <button onclick="switchTab('p')">View V&ndash;I Graph &amp; Table &rarr;</button>
+     <button onclick="newR()">New Wire</button>
+     <button onclick="reveal()">Reveal R</button>
+    </div>
+    <div id="fo" class="fb">Connect all 7 terminal leads on the Circuit Wiring Diagram first, then close Plug Key (K).</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ==================== TAB 2: DEDICATED V-I GRAPH & OBSERVATION TABLE ==================== -->
+<section id="p" hidden>
+ <div class="c">
+  <h3><span>V&ndash;I Characteristic Graph (Linear Best Fit)</span><button class="hb" title="Understanding the V-I Plot & Slope" onclick="goHelp('h-ohm-obs')">?</button></h3>
+  <p class="muted" style="margin:0 0 8px">According to Ohm's Law (<i>V = I &middot; R</i>), plotting Voltage <i>V</i> (in volts) against Current <i>I</i> (in mA) yields a straight line through the origin whose slope gives the unknown resistance <b>R</b>.</p>
+  <canvas id="cg"></canvas>
+  <div id="fit" style="margin-top:8px;font-size:14px"><b>Record at least 2 readings in the Ohm's Law Lab tab to plot the best-fit line.</b></div>
+ </div>
+ <div class="c">
+  <h3><span>Recorded Observations Table</span><button onclick="switchTab('o')">&larr; Back to Ohm's Law Lab</button></h3>
+  <div class="r" style="margin-bottom:8px">
+   <button style="background:var(--ac);color:#fff;border-color:var(--ac)" onclick="useS();switchTab('g')">Use Slope in Wire Lab (&rho;) &rarr;</button>
+   <button onclick="newR()">New Wire</button>
+   <button onclick="reveal()">Reveal True R</button>
+  </div>
+  <div id="fo-graph" class="muted" style="margin-bottom:6px"></div>
+  <table>
+   <thead><tr><th>S.No.<th>Voltmeter V (volt)<th>Ammeter I (mA)<th>Ratio V/I (&Omega;)</thead>
+   <tbody id="tb"><tr><td colspan="4" class="muted" style="padding:14px">No readings recorded yet. Switch to <b>Ohm's Law Lab</b> to take measurements.</td></tr></tbody>
+  </table>
+ </div>
+</section>
+
+<!-- ==================== TAB 3: WIRE LAB (SCREW GAUGE + METRE SCALE + RHO) ==================== -->
+<section id="g" hidden>
+ <div class="c">
+  <h3><span>Screw gauge &mdash; pitch 1 mm, 100 div &mdash; tap to zoom</span><button class="hb" title="How to read a Screw Gauge & Zero Error" onclick="goHelp('h-screw')">?</button></h3>
+  <canvas id="cs" onclick="zoom('G')"></canvas>
+  <div class="r"><button id="wb" onclick="togWire()">Insert wire</button><button onclick="zoom('G')">&#128269; Zoom gauge</button><button onclick="G.dl=+(G.d+rg()*.003).toFixed(4);gd()">New spot</button>
+   <label><input type="checkbox" id="zc2" checked onchange="G.z=zerr(this.checked);ze=null;gd()"> zero error</label></div>
+  <div>Turn thimble (&larr; close | open &rarr;; the ratchet stops at the wire)</div>
+  <input id="tr" type="range" min="-100" max="600" step="0.1" value="300" oninput="G.turn=+this.value;gd()">
+  <div class="r"><button onclick="gn(-10)">-10</button><button onclick="gn(-1)">-1</button><button onclick="gn(-.1)">-0.1</button><button onclick="gn(.1)">+0.1</button><button onclick="gn(1)">+1</button><button onclick="gn(10)">+10</button></div>
+  <div id="gs" class="w"></div>
+ </div>
+ <div class="c">
+  <h3><span>Your readings</span><button class="hb" title="Zero error & diameter formula" onclick="goHelp('h-screw-calc')">?</button></h3>
+  <div class="r">MSR (mm) <input id="em" type="text" inputmode="decimal"> CSR (div) <input id="ec" type="text" inputmode="decimal"></div>
+  <div class="r"><button onclick="grec()">Check &amp; record diameter</button></div>
+  <div class="r">Zero error (mm, sign) <input id="ez" type="text" inputmode="decimal"><button onclick="gze()">Check zero error</button></div>
+  <div id="fg" class="fb">Remove the wire, close the jaws, find the zero error first. Then insert the wire and tighten until the ratchet clicks.</div>
+  <table><thead><tr><th>#<th>MSR<th>CSR<th>Observed<th>Corrected d (mm)</thead><tbody id="gt"></tbody></table><div id="gm"><b></b></div>
+ </div>
+ <div class="c">
+  <h3><span>Metre scale &mdash; length of the wire &mdash; tap to zoom</span><button class="hb" title="How to use the sliding magnifier" onclick="goHelp('h-scale')">?</button></h3>
+  <canvas id="cm" onclick="zoom('M')"></canvas>
+  <input id="ms" type="range" min="0" max="96" step="0.05" value="8" oninput="mp=+this.value;mdraw()">
+  <div class="r"><button onclick="mb(-5)">-5</button><button onclick="mb(-1)">-1</button><button onclick="mb(-.1)">-0.1</button><button onclick="mb(.1)">+0.1</button><button onclick="mb(1)">+1</button><button onclick="mb(5)">+5 cm</button><button onclick="zoom('M')">&#128269; Zoom scale</button></div>
+  <div class="r">Left end (cm) <input id="l1" type="text" inputmode="decimal"> Right end (cm) <input id="l2" type="text" inputmode="decimal"></div>
+  <div class="r"><button onclick="lrec()">Check &amp; record length</button></div><div id="fl" class="fb">Slide the magnifier to each end of the wire and read to 0.1 cm (1 mm).</div><div id="ml"></div>
+ </div>
+ <div class="c">
+  <h3><span>Specific resistance &rho; = R&middot;A / L</span><button class="hb" title="Unit conversions & resistivity formula" onclick="goHelp('h-rho')">?</button></h3>
+  <div class="r">R (&Omega;) <input id="eR" type="text" inputmode="decimal"><button onclick="useS()">Use slope of my V&ndash;I graph</button></div>
+  <div class="r"><button onclick="rho()">Calculate &rho;</button><button onclick="revW()">Reveal wire</button><button onclick="newR()">New wire</button></div>
+  <pre id="res" style="white-space:pre-wrap;margin:6px 0;font:13px monospace"></pre>
+  <small>Reference &rho; (&Omega;&middot;m): Constantan 4.9e-7, Nichrome 1.10e-6, Manganin 4.4e-7, German silver 3.3e-7, Kanthal 1.45e-6. The wire here is the unknown resistor R of the Ohm's Law tab.</small>
+ </div>
+</section>
+
+<!-- ==================== TAB 4: HELP & LAB MANUAL SECTION ==================== -->
+<section id="h" hidden>
+ <div class="c" id="h-workflow">
+  <h3><span>&#128218; Lab Manual &amp; Step-by-Step Guide</span><button onclick="switchTab('o')">Back to Lab &rarr;</button></h3>
+  <p class="muted" style="margin:2px 0 8px">This virtual physics lab models a complete two-part experiment on the <b>same unknown metallic wire</b>. Follow the four stages below from start to finish:</p>
+  <div class="step-row">
+   <div class="step-box">
+    <span class="step-num">STEP 1 &bull; OHM'S LAW TAB</span>
+    <div><b>Drag Terminals &amp; Find R</b></div>
+    <div class="muted">Drag wires between the 12 component terminals (<code>E+</code>, <code>A+</code>, <code>A&minus;</code>, <code>R1</code>, <code>R2</code>, <code>Rh1</code>, <code>Rh2</code>, <code>K1</code>, <code>K2</code>, <code>E&minus;</code>, <code>V+</code>, <code>V&minus;</code>). Then close Key (K), vary <i>Rh</i>, and record <i>V&ndash;I</i> pairs.</div>
+   </div>
+   <div class="step-box">
+    <span class="step-num">STEP 2 &bull; WIRE LAB TAB</span>
+    <div><b>Measure Diameter (d)</b></div>
+    <div class="muted">First close the empty Screw Gauge jaws to find <b>Zero Error</b>. Next insert the wire, tighten until the ratchet clicks, and record 2&ndash;3 diameter readings at different spots.</div>
+   </div>
+   <div class="step-box">
+    <span class="step-num">STEP 3 &bull; WIRE LAB TAB</span>
+    <div><b>Measure Length (L)</b></div>
+    <div class="muted">Slide the red magnifier box along the Metre Scale to read the exact left and right ends of the wire (in cm) to calculate total length <i>L</i>.</div>
+   </div>
+   <div class="step-box">
+    <span class="step-num">STEP 4 &bull; WIRE LAB TAB</span>
+    <div><b>Identify Material (&rho;)</b></div>
+    <div class="muted">Import your graph slope <i>R</i>, press <b>Calculate &rho;</b> to compute specific resistance (&Omega;&middot;m), and match it with the alloy reference table.</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="h-grid">
+  <div class="c" id="h-meters">
+   <h3><span>1A. Reading the Analog Voltmeter &amp; Ammeter</span><button onclick="switchTab('o')">Try in Ohm's Law &rarr;</button></h3>
+   <p>Analog scales have major numbered marks and smaller unnumbered ticks between them. Always check the <b>Least Count (LC)</b> shown at the top-right of each dial:</p>
+   <div class="formula">LC = Value of 1 Major Division &divide; Number of Subdivisions</div>
+   <ul class="h-list">
+    <li><b>Voltmeter 0&ndash;3 V:</b> Major marks every <code>0.5 V</code> with 10 subdivisions &rarr; <b>LC = 0.05 V</b> per small tick.</li>
+    <li><b>Voltmeter 0&ndash;10 V:</b> Major marks every <code>2 V</code> with 10 subdivisions &rarr; <b>LC = 0.2 V</b> per small tick.</li>
+    <li><b>Ammeter 0&ndash;100 mA:</b> Major marks every <code>20 mA</code> with 20 subdivisions &rarr; <b>LC = 1 mA</b> per small tick.</li>
+   </ul>
+   <h4>Tips for Accurate Readings</h4>
+   <ul class="h-list">
+    <li><b>Tap any dial to zoom:</b> Opens a full-screen high-resolution view with fine <code>&plusmn;0.1 &Omega;</code> rheostat buttons right below it.</li>
+    <li><b>Wait for damping:</b> Real moving-coil needles oscillate briefly before settling. Wait ~1 second until the needle stops moving.</li>
+    <li><b>Tolerance:</b> Your typed value must be within <b>&plusmn;1 LC</b> of the true needle position to be accepted.</li>
+   </ul>
+  </div>
+
+  <div class="c" id="h-circuit">
+   <h3><span>1B. Interactive Terminal Wiring &amp; Reference Diagram</span><button onclick="switchTab('o')">Try in Ohm's Law &rarr;</button></h3>
+   <h4>7 Required Terminal-to-Terminal Leads (Before Closing Plug Key K)</h4>
+   <ol class="h-list">
+    <li><b><code>E+</code> &harr; <code>A+</code>:</b> Battery positive terminal to Ammeter positive terminal (series).</li>
+    <li><b><code>A&minus;</code> &harr; <code>R1</code>:</b> Ammeter negative terminal to the left terminal of unknown Resistance.</li>
+    <li><b><code>R2</code> &harr; <code>Rh1</code>:</b> Right terminal of Resistance to the lower fixed terminal of Rheostat <code>Rh</code>.</li>
+    <li><b><code>Rh2</code> &harr; <code>K1</code>:</b> Upper sliding wiper terminal of Rheostat to right terminal of Plug Key <code>(K)</code>.</li>
+    <li><b><code>K2</code> &harr; <code>E&minus;</code>:</b> Left terminal of Plug Key <code>(K)</code> back to Battery negative terminal.</li>
+    <li><b><code>V+</code> &harr; <code>R1</code> (Conn. A) or <code>A+</code> (Conn. B):</b> Voltmeter positive terminal to the high-potential side.</li>
+    <li><b><code>V&minus;</code> &harr; <code>R2</code>:</b> Voltmeter negative terminal to the right terminal of Resistance.</li>
+   </ol>
+   <p class="muted"><b>Trial-and-Error Learning:</b> If you drag between two wrong terminals (such as short-circuiting <code>E+</code> to <code>E&minus;</code>, reversing meter polarity, or putting Ammeter in parallel), the circuit shows a red fault wire and explains the exact physics error.</p>
+   <canvas id="href"></canvas>
+   <h4 id="h-ohm-obs">Why Connection A and Connection B Differ</h4>
+   <p class="muted">Real meters are not ideal (Voltmeter resistance <i>R<sub>v</sub></i> is finite; Ammeter resistance <i>R<sub>a</sub></i> &gt; 0):</p>
+   <ul class="h-list">
+    <li><b>Connection A (V across R only):</b> Voltmeter draws a tiny current, so the ammeter reads slightly more than the current in <i>R</i>. Measured <i>V/I = R &parallel; R<sub>v</sub></i> (slightly <b>lower</b> than true <i>R</i>).</li>
+    <li><b>Connection B (V across A + R):</b> Voltmeter measures voltage across both the ammeter and wire. Measured <i>V/I = R + R<sub>a</sub></i> (slightly <b>higher</b> than true <i>R</i>).</li>
+   </ul>
+  </div>
+ </div>
+
+ <div class="c" id="h-screw">
+  <h3><span>2. Mastering the Screw Gauge (Micrometer)</span><button onclick="switchTab('g')">Try in Wire Lab &rarr;</button></h3>
+  <p>The screw gauge measures very thin wires to <b>0.01 mm</b> precision. Its pitch is <b>1 mm</b> (1 full thimble rotation moves the spindle 1 mm) and the circular thimble has <b>100 divisions</b>, so <code>LC = 1 mm / 100 = 0.01 mm</code>.</p>
+  <div class="h-grid">
+   <div>
+    <h4>Step A: Find Zero Error (Before Inserting Wire)</h4>
+    <ol class="h-list">
+     <li>Make sure no wire is in the jaws (button says <i>Insert wire</i>).</li>
+     <li>Slide the thimble left (or click <code>-10</code>) until the jaws close and <b>"Ratchet clicking"</b> appears.</li>
+     <li>Look at which circular thimble division aligns with the horizontal red reference line:
+      <ul>
+       <li><b>Positive Zero Error (CSR &le; 50):</b> The 0 mark is <i>below</i> the red line.<br><code>Zero Error = +(CSR &times; 0.01) mm</code></li>
+       <li><b>Negative Zero Error (CSR &gt; 50):</b> The 0 mark is <i>above</i> the red line (e.g., 97 means 3 divisions short of 100).<br><code>Zero Error = &minus;((100 &minus; CSR) &times; 0.01) mm</code></li>
+      </ul>
+     </li>
+     <li>Enter the signed value (e.g., <code>+0.03</code> or <code>-0.02</code>) and click <b>Check zero error</b>.</li>
+    </ol>
+   </div>
+   <div id="h-screw-calc">
+    <h4>Step B: Measure the Wire Diameter</h4>
+    <ol class="h-list">
+     <li>Open the thimble (slide right), click <b>Insert wire</b>, then tighten left until the ratchet clicks.</li>
+     <li><b>MSR (Main Scale Reading):</b> Read the last whole millimeter mark visible on the horizontal sleeve (<code>0, 1, 2... mm</code>).</li>
+     <li><b>CSR (Circular Scale Reading):</b> Read the thimble division (<code>0&ndash;99</code>) aligned with the red line.</li>
+     <li>Calculate Observed &amp; Corrected diameter:
+      <div class="formula">Observed = MSR + (CSR &times; 0.01) mm<br>Corrected d = Observed &minus; (Zero Error)</div>
+      <span class="muted"><i>Watch the minus sign!</i> Subtracting a negative zero error <b>adds</b> to the observed reading (e.g., <code>0.45 &minus; (-0.02) = 0.47 mm</code>).</span>
+     </li>
+    </ol>
+   </div>
+  </div>
+
+  <div class="sim-box">
+   <b>&#129518; Interactive Screw Gauge Formula Helper (Test your understanding)</b>
+   <div class="r" style="margin-top:6px">
+    <label>Sample MSR (mm): <select id="hm-msr" onchange="updHelpSim()"><option>0</option><option selected>1</option><option>2</option></select></label>
+    <label>Sample CSR (0&ndash;99): <input id="hm-csr" type="number" min="0" max="99" value="42" style="width:68px" oninput="updHelpSim()"></label>
+    <label>Zero-Closure CSR: <select id="hm-zcsr" onchange="updHelpSim()">
+     <option value="0">0 (No zero error)</option>
+     <option value="3" selected>3 (Positive error: +0.03 mm)</option>
+     <option value="97">97 (Negative error: -0.03 mm)</option>
+     <option value="98">98 (Negative error: -0.02 mm)</option>
+    </select></label>
+   </div>
+   <div class="sim-out" id="hm-out"></div>
+  </div>
+ </div>
+
+ <div class="h-grid">
+  <div class="c" id="h-scale">
+   <h3><span>3A. Metre Scale &amp; Sliding Magnifier</span><button onclick="switchTab('g')">Try in Wire Lab &rarr;</button></h3>
+   <ul class="h-list">
+    <li>The copper wire rests along a 0&ndash;100 cm ruler, starting at a random offset (not at 0 cm) to prevent worn-end error.</li>
+    <li>The top bar shows the full 100 cm overview; the bottom bar shows a <b>4 cm zoomed window</b> inside the red rectangle.</li>
+    <li>Slide the magnifier over the <b>left end</b> of the wire, read to the nearest <code>0.1 cm</code> (1 mm tick), then slide to the <b>right end</b> and read again.</li>
+    <li>Total wire length is simply: <code>L = Right End &minus; Left End</code> (in cm).</li>
+   </ul>
+  </div>
+
+  <div class="c" id="h-rho">
+   <h3><span>3B. Calculating Specific Resistance (&rho;)</span><button onclick="switchTab('g')">Try in Wire Lab &rarr;</button></h3>
+   <p>Resistivity (&rho;) is an intrinsic property of the wire's alloy, independent of its thickness or length:</p>
+   <div class="formula">&rho; = (R &times; A) / L &nbsp;&nbsp;where&nbsp;&nbsp; A = &pi;d&sup2; / 4</div>
+   <ul class="h-list">
+    <li><b>Automatic Unit Conversion:</b> When you click <b>Calculate &rho;</b>, the app automatically converts mean diameter <i>d</i> from <code>mm &rarr; m</code> (&times;10<sup>&minus;3</sup>) and length <i>L</i> from <code>cm &rarr; m</code> (&times;10<sup>&minus;2</sup>).</li>
+    <li>Click <b>Use slope of my V&ndash;I graph</b> to transfer your resistance <i>R</i> directly from Tab 1.</li>
+    <li>Compare your calculated &rho; (in &Omega;&middot;m) against the 5 standard alloys listed at the bottom of the card.</li>
+   </ul>
+  </div>
+ </div>
+
+ <div class="c" id="h-faq">
+  <h3><span>4. Troubleshooting &amp; Common Mistakes</span></h3>
+  <details>
+   <summary>"Needles still swinging &ndash; wait."</summary>
+   <p>Whenever you close Key K, change Battery E, or move the Rheostat, the analog needles oscillate with realistic inertia. Wait about 1 second until both needles come to rest before clicking <b>Check &amp; record</b>.</p>
+  </details>
+  <details>
+   <summary>"Jaws too close &ndash; open the thimble first."</summary>
+   <p>In the Screw Gauge, you cannot insert a wire if the gap between the anvil and spindle is narrower than the wire's diameter. Drag the thimble slider to the right (or press <code>+10</code>) to open the jaws, then press <b>Insert wire</b>.</p>
+  </details>
+  <details>
+   <summary>"Re-read: error must be &le; 1 LC."</summary>
+   <p>Your entered reading is slightly off from the needle or scale mark. Tap the meter, screw gauge, or metre scale canvas to open the <b>full-screen zoom view</b> and count the minor subdivisions carefully.</p>
+  </details>
+  <details>
+   <summary>Why doesn't my V&ndash;I slope match "Reveal R" to 100% precision?</summary>
+   <p>Because the simulation includes realistic voltmeter resistance (<i>R<sub>v</sub></i>) and ammeter resistance (<i>R<sub>a</sub></i>)! In Connection A, the voltmeter draws a small parallel current; in Connection B, the ammeter adds a small series resistance. Use a higher voltmeter range (larger <i>R<sub>v</sub></i>) in Connection A to get closer to the true <i>R</i>.</p>
+  </details>
+ </div>
+</section>
+
+<!-- ==================== TAB 5: CREDITS ==================== -->
+<section id="c" hidden style="grid-template-columns:1fr">
+ <div class="c">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+   <h3 style="margin:0;font-size:16px">&#127942; Project Credits &amp; Acknowledgements</h3>
+   <button onclick="switchTab('o')">Back to Lab &rarr;</button>
+  </div>
+  <div class="cred-hero">
+   <div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ee6ff;margin-bottom:4px">Created, Designed &amp; Developed By</div>
+   <h2>Esam Bushair Mohammad</h2>
+   <p>Ohm's Law &amp; Screw Gauge Interactive Physics Laboratory</p>
+  </div>
+  <div class="h-grid">
+   <div class="step-box">
+    <span class="step-num">CONCEPT &amp; PHYSICS ENGINE</span>
+    <div><b>Esam Bushair Mohammad</b></div>
+    <p class="muted" style="margin:4px 0 0">Circuit nodal solver, realistic internal meter resistances (<i>R<sub>v</sub></i> &amp; <i>R<sub>a</sub></i>), damped moving-coil needle physics, micrometer screw gauge zero-error &amp; ratchet mechanics, and alloy resistivity modeling.</p>
+   </div>
+   <div class="step-box">
+    <span class="step-num">INTERACTIVE CIRCUIT &amp; UI DESIGN</span>
+    <div><b>Esam Bushair Mohammad</b></div>
+    <p class="muted" style="margin:4px 0 0">Drag-and-drop terminal wiring workbench with real-time short-circuit &amp; polarity mistake diagnosis, HiDPI analog dial &amp; micrometer rendering, V&ndash;I linear regression plotter, and sliding metre-scale magnifier.</p>
+   </div>
+   <div class="step-box">
+    <span class="step-num">AUDIO &amp; SOUND DESIGN</span>
+    <div><b>Esam Bushair Mohammad</b></div>
+    <p class="muted" style="margin:4px 0 0">Custom menu music integration and synthesized Web Audio API sound effects for wire snaps, circuit completion chimes, fault buzzes, and reading validation.</p>
+   </div>
+   <div class="step-box">
+    <span class="step-num">LAB MANUAL &amp; DOCUMENTATION</span>
+    <div><b>Esam Bushair Mohammad</b></div>
+    <p class="muted" style="margin:4px 0 0">Step-by-step experimental procedures, reference schematic layout, interactive screw gauge formula simulator, and troubleshooting guide.</p>
+   </div>
+  </div>
+  <div style="margin-top:12px;text-align:center;color:var(--sub);font-size:13px">
+   &copy; 2026 <b>Esam Bushair Mohammad</b>. All rights reserved.
+  </div>
+ </div>
+</section>
+
+<div id="ov" hidden><canvas id="zc"></canvas><div class="r" id="zb"></div></div>
+
+<script>
+const $=id=>document.getElementById(id),rg=()=>Math.random()*2-1,PI=Math.PI,FF="'Futura','Century Gothic','Jost',sans-serif";
+
+/* ---------- Web Audio API Synthesized Sound Effects (SFX) ---------- */
+const SFX={
+ ctx:null,
+ enabled:true,
+ ensure(){
+  if(!this.enabled)return null;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return null;
+  if(!this.ctx)this.ctx=new AC();
+  if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});
+  return this.ctx;
+ },
+ tone(freq,dur,type='sine',vol=0.14,delay=0,endFreq=null){
+  const c=this.ensure();if(!c)return;
+  const t0=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t0);
+  if(endFreq!==null)o.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),t0+dur);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g);g.connect(c.destination);
+  o.start(t0);o.stop(t0+dur+0.02);
+ },
+ wireOk(){
+  this.tone(520,0.09,'triangle',0.15,0,780);
+  this.tone(880,0.16,'sine',0.12,0.07);
+ },
+ circuitReady(){
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>this.tone(f,0.18,'sine',0.13,i*0.07));
+ },
+ wireBad(){
+  this.tone(175,0.22,'sawtooth',0.15,0,105);
+  this.tone(130,0.24,'square',0.1,0.05,85);
+ },
+ readOk(){
+  this.tone(660,0.11,'sine',0.13,0);
+  this.tone(990,0.19,'sine',0.13,0.08);
+ },
+ readBad(){
+  this.tone(330,0.12,'triangle',0.14,0);
+  this.tone(240,0.18,'triangle',0.14,0.11);
+ },
+ click(){
+  this.tone(950,0.04,'triangle',0.1,0,420);
+ },
+ toggle(){
+  this.enabled=!this.enabled;
+  if($('menu-sfx-btn'))$('menu-sfx-btn').innerHTML=this.enabled?'&#128266; SFX On':'&#128263; SFX Off';
+  if($('nav-sfx-btn'))$('nav-sfx-btn').innerHTML=this.enabled?'&#128266; SFX':'&#128263; SFX';
+  if(this.enabled)this.click();
+ }
+};
+
+/* ---------- Default & Custom Menu Music Controller ---------- */
+const DEFAULT_BGM_CANDIDATES=['main_menu_music.mp3','main_menu_music.wav','main_menu_music.ogg','main_menu_music.m4a'];
+let bgmUrl=null,bgmCandIdx=0,bgmUserMuted=false,bgmUsingDefault=true;
+function syncBgmButtons(){
+ const aud=$('bgm-audio');if(!aud)return;
+ const playing=!aud.paused&&!!aud.src;
+ if($('bgm-play-btn')){
+  $('bgm-play-btn').innerHTML=playing?'&#127925; Menu Music: ON':'&#127925; Menu Music: OFF';
+  $('bgm-play-btn').classList.toggle('primary',playing);
+ }
+ if($('nav-bgm-btn')){
+  $('nav-bgm-btn').innerHTML=playing?'&#127925; Music: ON':'&#127925; Music: OFF';
+ }
+}
+function initDefaultMenuMusic(){
+ const aud=$('bgm-audio');if(!aud)return;
+ aud.volume=parseFloat($('bgm-vol').value)||0.55;
+ aud.loop=$('bgm-loop').checked;
+ bgmCandIdx=0;bgmUsingDefault=true;
+ aud.onerror=()=>{
+  if(!bgmUsingDefault)return;
+  bgmCandIdx++;
+  if(bgmCandIdx<DEFAULT_BGM_CANDIDATES.length){
+   aud.src=DEFAULT_BGM_CANDIDATES[bgmCandIdx];
+   aud.load();
+   if(!bgmUserMuted)aud.play().then(syncBgmButtons).catch(syncBgmButtons);
+  }else{
+   if($('bgm-name')){
+    $('bgm-name').textContent='Place main_menu_music.mp3 nearby';
+    $('bgm-name').title='Could not find main_menu_music (.mp3/.wav/.ogg/.m4a) in folder — you can also upload a custom track.';
+   }
+   syncBgmButtons();
+  }
+ };
+ aud.onloadeddata=()=>{
+  if(bgmUsingDefault&&$('bgm-name')){
+   $('bgm-name').textContent='Track: '+DEFAULT_BGM_CANDIDATES[bgmCandIdx];
+   $('bgm-name').title='Loaded '+DEFAULT_BGM_CANDIDATES[bgmCandIdx];
+  }
+  syncBgmButtons();
+ };
+ aud.src=DEFAULT_BGM_CANDIDATES[0];
+ aud.play().then(syncBgmButtons).catch(()=>{
+  syncBgmButtons();
+  const unlock=()=>{
+   document.removeEventListener('pointerdown',unlock);
+   document.removeEventListener('keydown',unlock);
+   if(!bgmUserMuted&&aud.paused&&!$('ld').hidden){
+    aud.play().then(syncBgmButtons).catch(()=>{});
+   }
+  };
+  document.addEventListener('pointerdown',unlock,{once:true});
+  document.addEventListener('keydown',unlock,{once:true});
+ });
+}
+function loadMenuMusic(input){
+ const file=input.files&&input.files[0];if(!file)return;
+ bgmUsingDefault=false;bgmUserMuted=false;
+ if(bgmUrl)URL.revokeObjectURL(bgmUrl);
+ bgmUrl=URL.createObjectURL(file);
+ const aud=$('bgm-audio');
+ aud.onerror=null;
+ aud.src=bgmUrl;
+ aud.volume=parseFloat($('bgm-vol').value)||0.55;
+ aud.loop=$('bgm-loop').checked;
+ if($('bgm-name')){
+  $('bgm-name').textContent='Track: '+file.name;
+  $('bgm-name').title=file.name;
+ }
+ aud.play().then(syncBgmButtons).catch(syncBgmButtons);
+}
+function toggleBgm(){
+ const aud=$('bgm-audio');if(!aud||!aud.src)return;
+ if(aud.paused){
+  bgmUserMuted=false;
+  aud.play().then(syncBgmButtons).catch(syncBgmButtons);
+ }else{
+  bgmUserMuted=true;
+  aud.pause();
+  syncBgmButtons();
+ }
+}
+function setBgmVol(v){
+ const aud=$('bgm-audio');if(aud)aud.volume=parseFloat(v);
+}
+function setBgmLoop(on){
+ const aud=$('bgm-audio');if(aud)aud.loop=!!on;
+}
+const DPR=()=>Math.max(window.devicePixelRatio||1,2.5);
+function setupHiDPI(cv,lw,lh){
+ if(!cv)return null;
+ const dpr=DPR(),bw=Math.round(lw*dpr),bh=Math.round(lh*dpr);
+ if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh}
+ const c=cv.getContext('2d');
+ c.setTransform(dpr,0,0,dpr,0,0);
+ c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+ return c;
+}
+const VR=[[3,.5,.05],[10,2,.2],[15,5,.5]],AR=[[.1,.02,.001],[.5,.1,.005],[1,.2,.01]],RG=50,IG=1e-3;
+const S={key:0,E:6,rh:100,conn:'A',vr:0,ar:0,R:0,data:[],wired:[false,false,false,false,false,false,false],mistakes:0};
+
+/* ---------- Interactive Terminal Graph & Drag-and-Drop Wiring ---------- */
+const TERMS={
+ 'E+':{x:176,y:115,lbl:'E+',pol:'+',name:'Battery (+)'},
+ 'E-':{x:244,y:115,lbl:'E−',pol:'-',name:'Battery (−)'},
+ 'A+':{x:74,y:164,lbl:'A+',pol:'+',name:'Ammeter (+)'},
+ 'A-':{x:74,y:226,lbl:'A−',pol:'-',name:'Ammeter (−)'},
+ 'R1':{x:210,y:276,lbl:'R1',pol:'0',name:'Resistor Left (R1)'},
+ 'R2':{x:354,y:276,lbl:'R2',pol:'0',name:'Resistor Right (R2)'},
+ 'Rh1':{x:482,y:236,lbl:'Rh1',pol:'0',name:'Rheostat Lower (Rh1)'},
+ 'Rh2':{x:450,y:166,lbl:'Rh2',pol:'0',name:'Rheostat Slider (Rh2)'},
+ 'K1':{x:404,y:115,lbl:'K1',pol:'0',name:'Plug Key Right (K1)'},
+ 'K2':{x:350,y:115,lbl:'K2',pol:'0',name:'Plug Key Left (K2)'},
+ 'V+':{x:252,y:336,lbl:'V+',pol:'+',name:'Voltmeter (+)'},
+ 'V-':{x:312,y:336,lbl:'V−',pol:'-',name:'Voltmeter (−)'}
+};
+const getValidPairs=()=>[
+ {a:'E+',b:'A+',tag:'E+ ↔ A+'},
+ {a:'A-',b:'R1',tag:'A− ↔ R1'},
+ {a:'R2',b:'Rh1',tag:'R2 ↔ Rh1'},
+ {a:'Rh2',b:'K1',tag:'Rh2 ↔ K1'},
+ {a:'K2',b:'E-',tag:'K2 ↔ E−'},
+ S.conn==='A'?{a:'V+',b:'R1',tag:'V+ ↔ R1'}:{a:'V+',b:'A+',tag:'V+ ↔ A+'},
+ {a:'V-',b:'R2',tag:'V− ↔ R2'}
+];
+const dragState={active:false,from:null,x:0,y:0,hover:null,selected:null,fault:null};
+const allWired=()=>S.wired.every(Boolean);
+
+function setWireFb(html,cls=''){
+ const el=$('w-fb');
+ if(!el)return;
+ el.innerHTML=html;
+ el.className='wire-fb'+(cls?' '+cls:'');
+}
+function clearFault(){
+ dragState.fault=null;
+ if($('btn-clear-fault'))$('btn-clear-fault').hidden=true;
+ circuit();
+}
+function renderWireUI(){
+ const pairs=getValidPairs();
+ const cnt=S.wired.filter(Boolean).length;
+ if($('w-prog')){
+  $('w-prog').textContent=cnt+' / 7 Leads';
+  $('w-prog').className='w-badge'+(cnt===7?' ready':'');
+ }
+ if($('sub-wire-badge')){
+  $('sub-wire-badge').textContent=cnt+'/7';
+  $('sub-wire-badge').className='w-badge'+(cnt===7?' ready':'');
+ }
+ const errEl=$('w-err-cnt');
+ if(errEl){
+  errEl.textContent=S.mistakes+(S.mistakes===1?' Mistake':' Mistakes');
+  errEl.className='w-badge'+(S.mistakes>0?' err':'');
+ }
+ if($('w-list')){
+  $('w-list').innerHTML=pairs.map((p,i)=>`<span class="w-chip ${S.wired[i]?'done':''}">${S.wired[i]?'&#10003; ':''}${p.tag}</span>`).join('');
+ }
+ const kb=$('kb'),kb2=$('kb2');
+ if(kb)kb.disabled=!allWired();
+ if(kb2)kb2.disabled=!allWired();
+}
+
+function diagnoseMistake(u,v){
+ const pair=[u,v].sort().join('|');
+ if(pair==='E+|E-')return '<b>Short Circuit Warning!</b> Connecting <b>E+</b> directly to <b>E−</b> shorts the battery with zero load resistance, overheating the cells.';
+ if(pair==='A+|A-')return '<b>Ammeter Shorted!</b> Connecting <b>A+</b> directly to <b>A−</b> bypasses the ammeter coil so no current can be measured.';
+ if(pair==='R1|R2')return '<b>Resistor Shorted!</b> Connecting <b>R1</b> directly to <b>R2</b> bypasses the unknown resistance wire completely.';
+ if(pair==='V+|V-')return '<b>Voltmeter Shorted!</b> Connecting <b>V+</b> directly to <b>V−</b> shorts the voltmeter terminals together.';
+ if(pair==='K1|K2')return '<b>Plug Key Bypassed!</b> Connecting <b>K1</b> directly to <b>K2</b> permanently bypasses the switch so you cannot open the circuit.';
+ if(pair==='Rh1|Rh2')return '<b>Rheostat Shorted!</b> Connecting <b>Rh1</b> directly to <b>Rh2</b> locks rheostat resistance at 0 Ω and disables current control.';
+ if((u==='E+'&&v==='A-')||(u==='A-'&&v==='E+'))return '<b>Reversed Ammeter Polarity!</b> Current from <b>E+</b> must enter the positive terminal <b>A+</b>, not <b>A−</b> (otherwise the needle deflects backwards).';
+ if((u==='V+'&&v==='R2')||(u==='R2'&&v==='V+')||(u==='V-'&&v==='R1')||(u==='R1'&&v==='V-')||(u==='V-'&&v==='A+')||(u==='A+'&&v==='V-'))
+  return '<b>Reversed Voltmeter Polarity!</b> Connect <b>V+</b> to the high-potential side (<b>'+(S.conn==='A'?'R1':'A+')+'</b>) and <b>V−</b> to the low-potential side (<b>R2</b>).';
+ if((u==='E+'&&(v==='V+'||v==='V-'))||(v==='E+'&&(u==='V+'||u==='V-')))
+  return '<b>Voltmeter in Series Mistake!</b> A voltmeter has very high resistance and must be connected in <b>parallel</b> across the resistor, not in series with the battery.';
+ if((u==='A+'&&v==='R2')||(u==='R2'&&v==='A+')||(u==='A-'&&v==='R2')||(u==='R2'&&v==='A-'))
+  return '<b>Ammeter in Parallel Mistake!</b> An ammeter has very low resistance; placing it across the resistor creates a dangerous short circuit. Connect <b>A−</b> to <b>R1</b> in series.';
+ if(S.conn==='A'&&((u==='V+'&&v==='A+')||(u==='A+'&&v==='V+')))
+  return '<b>Connection Mode Mismatch:</b> You selected <b>Connection A</b> (V across R only), so connect <b>V+</b> to <b>R1</b>—or switch the dropdown to <b>Connection B</b>.';
+ if(S.conn==='B'&&((u==='V+'&&v==='R1')||(u==='R1'&&v==='V+')))
+  return '<b>Connection Mode Mismatch:</b> You selected <b>Connection B</b> (V across A + R), so connect <b>V+</b> to <b>A+</b>—or switch the dropdown to <b>Connection A</b>.';
+ return `<b>Incorrect Circuit Path (${TERMS[u].lbl} &harr; ${TERMS[v].lbl}):</b> Check the <b>Reference Diagram</b>—trace the series loop <code>E+ &rarr; A+ &rarr; A− &rarr; R1 &rarr; R2 &rarr; Rh1 &rarr; Rh2 &rarr; K1 &rarr; K2 &rarr; E−</code>, with <code>V</code> in parallel.`;
+}
+
+function attemptConnection(u,v){
+ if(!u||!v||u===v)return;
+ const pairs=getValidPairs();
+ const idx=pairs.findIndex(p=>(p.a===u&&p.b===v)||(p.a===v&&p.b===u));
+ if(idx!==-1){
+  dragState.fault=null;
+  if($('btn-clear-fault'))$('btn-clear-fault').hidden=true;
+  if(S.wired[idx]){
+   setWireFb(`Lead <b>${pairs[idx].tag}</b> is already connected!`,'ok');
+  }else{
+   S.wired[idx]=true;
+   renderWireUI();
+   if(allWired()){
+    SFX.circuitReady();
+    setWireFb('&#127881; <b>All 7 leads connected accurately!</b> Plug Key <b>(K)</b> is now unlocked—close it or proceed to <b>2. Rheostat &amp; Readings</b>.','ok');
+    fb('fo','All 7 leads wired! Close Plug Key (K) and adjust Rh to record readings.','ok');
+   }else{
+    SFX.wireOk();
+    const rem=7-S.wired.filter(Boolean).length;
+    setWireFb(`&#10003; Connected <b>${pairs[idx].tag}</b>! (${rem} lead${rem===1?'':'s'} remaining)`,'ok');
+   }
+  }
+ }else{
+  SFX.wireBad();
+  S.mistakes++;
+  dragState.fault={a:u,b:v};
+  if($('btn-clear-fault'))$('btn-clear-fault').hidden=false;
+  renderWireUI();
+  setWireFb('&#10060; '+diagnoseMistake(u,v),'bad');
+ }
+ ref();
+}
+
+function autoWire(){
+ S.wired=[true,true,true,true,true,true,true];
+ dragState.fault=null;dragState.selected=null;
+ if($('btn-clear-fault'))$('btn-clear-fault').hidden=true;
+ renderWireUI();
+ setWireFb('&#10003; All 7 circuit leads auto-wired! Close Plug Key <b>(K)</b> or switch to <b>2. Rheostat &amp; Readings</b>.','ok');
+ fb('fo','Circuit complete! Close Plug Key (K) and vary Rh to take readings.','ok');
+ ref();
+}
+function resetWire(){
+ S.wired=[false,false,false,false,false,false,false];
+ S.key=0;dragState.fault=null;dragState.selected=null;
+ if($('btn-clear-fault'))$('btn-clear-fault').hidden=true;
+ renderWireUI();
+ setWireFb('Circuit cleared. Drag from any brass terminal (e.g., <b>E+</b>) to its matching terminal (<b>A+</b>).','');
+ fb('fo','Connect all 7 terminal leads on the Circuit Wiring Diagram first, then close Plug Key (K).','');
+ ref();
+}
+function changeConn(val){
+ S.conn=val;
+ if($('conn-sel-diag'))$('conn-sel-diag').value=val;
+ if($('conn-sel-ctrl'))$('conn-sel-ctrl').value=val;
+ S.wired[5]=false;
+ S.key=0;
+ dragState.fault=null;
+ if($('btn-clear-fault'))$('btn-clear-fault').hidden=true;
+ renderWireUI();
+ setWireFb(`Switched to <b>Connection ${val}</b>: connect <b>V+</b> to <b>${val==='A'?'R1 (across R only)':'A+ (across A + R)'}</b>.`,'');
+ ref();
+}
+function togKey(){
+ if(!allWired()){
+  SFX.readBad();
+  setWireFb('&#9888; <b>Cannot close Plug Key (K) yet:</b> Complete all 7 terminal connections first!','bad');
+  return fb('fo','Complete all 7 terminal connections before closing Plug Key (K).','w');
+ }
+ SFX.click();
+ S.key^=1;ref();
+}
+
+const MAT=[['Constantan',4.9e-7],['Nichrome',1.1e-6],['Manganin',4.4e-7],['German silver',3.3e-7],['Kanthal',1.45e-6]];
+let W,lenM=null,mp=8;
+function mkWire(){for(let t=0;t<500;t++){const m=MAT[Math.floor(Math.random()*5)];W={n:m[0],rho:m[1],d:+(.22+Math.random()*.38).toFixed(3),L:+(40+Math.random()*40).toFixed(3),x1:+(3+Math.random()*11).toFixed(3)};W.R=W.rho*W.L/100/(PI*(W.d*1e-3)**2/4);if(W.R>=3&&W.R<=90)break}S.R=W.R}
+mkWire();
+const M={V:{th:0,om:0,tg:0},A:{th:0,om:0,tg:0}};let zk=null,ze=null,diams=[];
+const rngOf=k=>k=='V'?VR[S.vr]:AR[S.ar];
+const rV=()=>VR[S.vr][0]/IG,rA=()=>{const f=AR[S.ar][0],rs=IG*RG/(f-IG);return RG*rs/(RG+rs)};
+function solve(){if(!S.key||!allWired())return[0,0];const Ra=rA(),Rv=rV(),R=S.R,E=S.E,rh=S.rh;
+ if(S.conn=='A'){const re=R*Rv/(R+Rv),it=E/(.2+rh+Ra+re);return[it*re,it]}
+ const b=Ra+R,re=b*Rv/(b+Rv),it=E/(.2+rh+re),v=it*re;return[v,v/b]}
+function ref(){if(!allWired())S.key=0;const[v,i]=solve();M.V.tg=v/VR[S.vr][0];M.A.tg=i/AR[S.ar][0];
+ const lbl=!allWired()?'Key (K): LOCKED':('Key (K): '+(S.key?'CLOSED':'OPEN'));
+ for(const id of['kb','kb2']){
+  const el=$(id);
+  if(el){el.disabled=!allWired();el.textContent=lbl;}
+ }
+ if($('rv'))$('rv').textContent=S.rh.toFixed(1);
+ if($('rh'))$('rh').value=S.rh;
+ if($('wn'))$('wn').textContent=(M.V.tg>1?'\u26a0 Voltmeter off-scale! ':'')+(M.A.tg>1?'\u26a0 Ammeter off-scale!':'');
+ circuit();
+ if(zk==='REF')drawCircuitDiagram($('zc'),920,true);
+}
+function bump(d){S.rh=Math.max(0,Math.min(100,+(S.rh+d).toFixed(1)));ref()}
+
+/* ---------- High-Resolution Moving-Coil Analog Meter Dial ---------- */
+function dial(cv,k,w){
+ const m=M[k],[fs,mj,lc]=rngOf(k),h=Math.round(w*236/360),c=setupHiDPI(cv,w,h);
+ if(!c)return;
+ const s=w/360,n=Math.round(fs/lc),km=Math.round(mj/lc),sc=k=='A'?1000:1,u=k=='A'?'mA':'V';
+ c.save();c.scale(s,s);
+ const bgGrad=c.createLinearGradient(0,0,0,236);
+ bgGrad.addColorStop(0,'#2b313c');bgGrad.addColorStop(1,'#181c23');
+ c.fillStyle=bgGrad;c.beginPath();c.roundRect(0,0,360,236,12);c.fill();
+ const faceGrad=c.createRadialGradient(180,195,20,180,150,190);
+ faceGrad.addColorStop(0,'#fffdf6');faceGrad.addColorStop(0.75,'#f6f0dc');faceGrad.addColorStop(1,'#e5dcc2');
+ c.fillStyle=faceGrad;c.beginPath();c.roundRect(8,8,344,220,8);c.fill();
+ c.strokeStyle='#b8ae93';c.lineWidth=1.5;c.stroke();
+ const cx=180,cy=202,R=154;
+ const P=(a,r)=>[cx+r*Math.sin(a),cy-r*Math.cos(a)];
+ c.strokeStyle='rgba(140,165,195,0.45)';c.lineWidth=5;
+ c.beginPath();c.arc(cx,cy,R-26,-PI/2-.8727,-PI/2+.8727);c.stroke();
+ c.strokeStyle='#1c2026';c.lineWidth=1.6;
+ c.beginPath();c.arc(cx,cy,R,-PI/2-.8727,-PI/2+.8727);c.stroke();
+ c.beginPath();c.arc(cx,cy,R-7,-PI/2-.8727,-PI/2+.8727);c.lineWidth=0.6;c.stroke();
+ c.fillStyle='#14181f';
+ for(let i=0;i<=n;i++){
+  const a=(-50+100*i/n)*PI/180,isMaj=i%km==0,isMid=(km%2==0&&i%(km/2)==0);
+  const L=isMaj?19:(isMid?13:8);
+  c.lineWidth=isMaj?1.8:(isMid?1.1:0.75);
+  c.beginPath();c.moveTo(...P(a,R));c.lineTo(...P(a,R-L));c.stroke();
+  if(isMaj){
+   c.font='700 11px '+FF;c.textAlign='center';c.textBaseline='middle';
+   c.fillText(+(i*lc*sc).toFixed(4),...P(a,R-33));
+  }
+ }
+ c.fillStyle='#1d2430';c.font='700 28px '+FF;c.textAlign='center';c.fillText(u,48,192);
+ c.strokeStyle='#1d2430';c.lineWidth=1.6;c.beginPath();c.moveTo(32,202);c.lineTo(64,202);c.stroke();
+ c.font='700 10.5px '+FF;c.textAlign='left';c.fillStyle='#2a3240';c.fillText(k=='V'?'DC VOLTMETER':'DC MILLIAMMETER',18,22);
+ c.textAlign='right';c.fillStyle='#b01818';c.fillText('0\u2013'+(fs*sc)+' '+u,342,22);
+ c.fillStyle='#4a5362';c.font='600 9.5px '+FF;c.fillText('LC = '+(+(lc*sc).toFixed(4))+' '+u,342,36);
+ const a=(-50+100*m.th)*PI/180;
+ c.save();
+ c.strokeStyle='rgba(0,0,0,0.22)';c.lineWidth=2.4;
+ c.beginPath();c.moveTo(cx+2-24*Math.sin(a),cy+3+24*Math.cos(a));c.lineTo(cx+2+(R-4)*Math.sin(a),cy+3-(R-4)*Math.cos(a));c.stroke();
+ c.strokeStyle='#d61515';c.lineWidth=2;c.lineCap='round';
+ c.beginPath();c.moveTo(...P(a+PI,24));c.lineTo(...P(a,R-3));c.stroke();
+ c.fillStyle='#b01010';c.beginPath();c.arc(...P(a+PI,20),3.5,0,7);c.fill();
+ c.restore();
+ const capGrad=c.createRadialGradient(cx-3,cy-3,2,cx,cy,13);
+ capGrad.addColorStop(0,'#6c7685');capGrad.addColorStop(1,'#1e232b');
+ c.fillStyle=capGrad;c.beginPath();c.arc(cx,cy,12,0,7);c.fill();
+ c.strokeStyle='#111';c.lineWidth=1;c.stroke();
+ c.fillStyle='#c5cdd8';c.beginPath();c.arc(cx,cy,3.5,0,7);c.fill();
+ c.restore();
+}
+const settled=()=>['V','A'].every(k=>Math.abs(M[k].th-M[k].tg)<.002&&Math.abs(M[k].om)<.02);
+
+/* ---------- Reference-Style Circuit Diagram ("Diagram to verify Ohm's law") ---------- */
+function drawCircuitDiagram(cv,w,isReference=false){
+ const h=Math.round(w*410/560),c=setupHiDPI(cv,w,h);
+ if(!c)return;
+ const s=w/560;
+ c.save();c.scale(s,s);
+ c.fillStyle='#ffffff';c.fillRect(0,0,560,410);
+ c.strokeStyle='#5856ec';c.lineWidth=14;
+ c.beginPath();c.roundRect(12,12,536,386,44);c.stroke();
+ c.fillStyle='#d94b54';c.font='700 22px '+FF;c.textAlign='center';c.textBaseline='alphabetic';
+ c.fillText("Diagram to verify Ohm\u2019s law",280,58);
+ if(isReference){
+  c.fillStyle='#5856ec';c.font='700 11px '+FF;c.textAlign='right';
+  c.fillText('REFERENCE SCHEMATIC',516,38);
+ }
+
+ const L=(...p)=>{c.beginPath();c.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(p[i],p[i+1]);c.stroke()};
+ const chevron=(x,y,dir)=>{
+  c.beginPath();
+  if(dir==='L'){c.moveTo(x+7,y-6);c.lineTo(x-3,y);c.lineTo(x+7,y+6)}
+  else if(dir==='R'){c.moveTo(x-7,y-6);c.lineTo(x+3,y);c.lineTo(x-7,y+6)}
+  else if(dir==='D'){c.moveTo(x-6,y-7);c.lineTo(x,y+3);c.lineTo(x+6,y-7)}
+  c.stroke();
+ };
+ const zigzagH=(x1,y,x2,peaks,amp)=>{
+  const dx=(x2-x1)/(peaks*2);
+  c.beginPath();c.moveTo(x1,y);
+  for(let i=1;i<peaks*2;i++)c.lineTo(x1+i*dx,y+(i%2?-amp:amp));
+  c.lineTo(x2,y);c.stroke();
+ };
+ const zigzagV=(x,y1,y2,peaks,amp)=>{
+  const dy=(y2-y1)/(peaks*2);
+  c.beginPath();c.moveTo(x,y1);
+  for(let i=1;i<peaks*2;i++)c.lineTo(x+(i%2?amp:-amp),y1+i*dy);
+  c.lineTo(x,y2);c.stroke();
+ };
+
+ const top=115,bot=276,lx=74,rx=482;
+ const active=isReference?true:(allWired()&&S.key);
+ c.lineCap='round';c.lineJoin='round';
+
+ if(isReference){
+  c.strokeStyle='#111';c.lineWidth=2.6;
+  L(lx,top,192,top);L(228,top,364,top);L(390,top,450,top,450,166,474,166);
+  chevron(128,top,'L');chevron(296,top,'L');chevron(466,166,'R');
+  L(rx,236,rx,bot,354,bot);chevron(422,bot,'R');
+  L(210,bot,lx,bot,lx,226);L(lx,164,lx,top);
+  L(194,bot,194,336,252,336);L(312,336,370,336,370,bot);
+ }else{
+  const drawOrthLead=(idA,idB,pts,ok,isPreview=false,isFault=false)=>{
+   c.save();
+   if(isFault){
+    c.strokeStyle='#dc2626';c.lineWidth=3.2;c.setLineDash([7,5]);
+    L(...pts);
+   }else if(isPreview){
+    c.strokeStyle='#1f5fd0';c.lineWidth=3;c.setLineDash([6,4]);
+    L(...pts);
+   }else if(ok){
+    c.strokeStyle=active?'#0a7a2f':'#1d4ed8';c.lineWidth=3;
+    L(...pts);
+    if(active&&pts.length>=4){
+     const mx=(pts[0]+pts[pts.length-2])/2,my=(pts[1]+pts[pts.length-1])/2;
+     c.fillStyle='#0a7a2f';c.beginPath();c.arc(mx,my,3,0,7);c.fill();
+    }
+   }else{
+    c.strokeStyle='rgba(148,163,184,0.34)';c.lineWidth=1.8;c.setLineDash([5,5]);
+    L(...pts);
+   }
+   c.restore();
+  };
+
+  drawOrthLead('E+','A+',[176,top,lx,top,lx,164],S.wired[0]);
+  drawOrthLead('A-','R1',[lx,226,lx,bot,210,bot],S.wired[1]);
+  drawOrthLead('R2','Rh1',[354,bot,rx,bot,rx,236],S.wired[2]);
+  drawOrthLead('Rh2','K1',[450,166,450,top,404,top],S.wired[3]);
+  drawOrthLead('K2','E-',[350,top,244,top],S.wired[4]);
+  if(S.conn==='A'){
+   drawOrthLead('V+','R1',[252,336,194,336,194,bot,210,bot],S.wired[5]);
+  }else{
+   drawOrthLead('V+','A+',[252,336,42,336,42,164,lx,164],S.wired[5]);
+  }
+  drawOrthLead('V-','R2',[312,336,370,336,370,bot,354,bot],S.wired[6]);
+
+  if(dragState.fault){
+   const a=TERMS[dragState.fault.a],b=TERMS[dragState.fault.b];
+   drawOrthLead(dragState.fault.a,dragState.fault.b,[a.x,a.y,b.x,b.y],false,false,true);
+  }
+  if(dragState.active&&dragState.from){
+   const a=TERMS[dragState.from];
+   drawOrthLead(dragState.from,null,[a.x,a.y,dragState.x,dragState.y],false,true,false);
+  }
+ }
+
+ c.strokeStyle='#111';c.lineWidth=2.6;
+ if(!isReference){
+  L(176,top,192,top);L(228,top,244,top);
+  L(350,top,364,top);L(390,top,404,top);
+  L(450,166,474,166);
+ }
+ for(const[x,h2,w2]of[[192,22,2.6],[202,12,3.4],[216,22,2.6],[228,12,3.4]]){
+  c.lineWidth=w2;L(x,top-h2,x,top+h2);
+ }
+ c.lineWidth=2.6;
+ c.fillStyle='#111';c.font='700 20px '+FF;c.textAlign='center';
+ c.fillText('+',176,top-16);c.fillText('\u2212',244,top-16);
+ if(!isReference){
+  c.font='600 11px '+FF;c.fillStyle='#444';c.fillText('E = '+S.E+' V',210,top+34);
+ }
+
+ c.strokeStyle='#111';c.lineWidth=2.6;
+ c.beginPath();c.arc(366,top,13,PI*0.68,PI*1.32);c.stroke();
+ c.beginPath();c.arc(388,top,13,-PI*0.32,PI*0.32);c.stroke();
+ if(isReference||S.key){
+  c.fillStyle='#111';c.beginPath();c.arc(377,top,3.6,0,7);c.fill();
+ }
+ c.fillStyle='#d94b54';c.font='700 15px '+FF;c.fillText('(K)',377,top-26);
+
+ c.strokeStyle='#111';c.lineWidth=2.6;
+ zigzagV(rx,164,236,6,8);
+ c.fillStyle='#d94b54';c.font='700 15px '+FF;c.textAlign='left';
+ c.fillText('Rh',rx+16,204);
+ if(!isReference){
+  c.fillStyle='#333';c.font='600 11px '+FF;c.fillText(S.rh.toFixed(1)+' \u03a9',rx+16,220);
+ }
+
+ c.strokeStyle='#111';c.lineWidth=2.6;
+ zigzagH(210,bot,354,10,8);
+ c.fillStyle='#d94b54';c.font='700 15px '+FF;c.textAlign='center';
+ c.fillText('Resistance',282,bot-20);
+
+ c.fillStyle='#fff';c.strokeStyle='#111';c.lineWidth=2.6;
+ c.beginPath();c.arc(lx,195,20,0,7);c.fill();c.stroke();
+ c.fillStyle='#111';c.font='700 20px '+FF;c.fillText('A',lx,202);
+ c.fillText('+',lx-18,166);c.fillText('\u2212',lx-18,236);
+
+ c.fillStyle='#fff';c.strokeStyle='#111';c.lineWidth=2.6;
+ c.beginPath();c.arc(282,336,20,0,7);c.fill();c.stroke();
+ c.fillStyle='#111';c.font='700 20px '+FF;c.fillText('V',282,343);
+ c.fillText('+',240,364);c.fillText('\u2212',324,364);
+
+ if(active){
+  c.strokeStyle='#0a7a2f';c.lineWidth=2.4;
+  chevron(128,top,'L');chevron(296,top,'L');chevron(422,bot,'R');
+ }
+
+ if(!isReference){
+  const pairs=getValidPairs();
+  const connectedSet=new Set();
+  S.wired.forEach((ok,i)=>{if(ok){connectedSet.add(pairs[i].a);connectedSet.add(pairs[i].b)}});
+  for(const[id,t]of Object.entries(TERMS)){
+   const isFrom=dragState.from===id||dragState.selected===id;
+   const isHover=dragState.hover===id;
+   const isFault=dragState.fault&&(dragState.fault.a===id||dragState.fault.b===id);
+   const isDone=connectedSet.has(id);
+   const r=(isFrom||isHover)?9:6.8;
+
+   if(isFrom||isHover||isFault){
+    c.fillStyle=isFault?'rgba(220,38,38,0.28)':'rgba(31,95,208,0.28)';
+    c.beginPath();c.arc(t.x,t.y,13,0,7);c.fill();
+   }
+   c.fillStyle=isFault?'#dc2626':(isFrom||isHover?'#1f5fd0':(isDone?'#0a7a2f':'#d97706'));
+   c.strokeStyle='#fff';c.lineWidth=1.8;
+   c.beginPath();c.arc(t.x,t.y,r,0,7);c.fill();c.stroke();
+
+   c.font='700 9.5px '+FF;
+   const tw=c.measureText(t.lbl).width+8;
+   const lxOff=(id==='A+'||id==='A-')?-26:(id==='Rh1'?26:(id==='Rh2'?-24:0));
+   const lyOff=(id==='A+'||id==='A-'||id==='Rh1'||id==='Rh2')?0:(id==='V+'||id==='V-'?-16:17);
+   c.fillStyle='rgba(255,255,255,0.92)';
+   c.beginPath();c.roundRect(t.x+lxOff-tw/2,t.y+lyOff-7,tw,14,4);c.fill();
+   c.strokeStyle=isFault?'#dc2626':'#cbd5e1';c.lineWidth=1;c.stroke();
+   c.fillStyle=isFault?'#dc2626':'#0f172a';c.textAlign='center';c.textBaseline='middle';
+   c.fillText(t.lbl,t.x+lxOff,t.y+lyOff);
+  }
+ }
+ c.restore();
+}
+function circuit(){
+ if($('cc'))drawCircuitDiagram($('cc'),560,false);
+ if($('href'))drawCircuitDiagram($('href'),560,true);
+}
+
+/* ---------- Pointer & Touch Events for Interactive Terminal Dragging ---------- */
+function getCanvasLogicalPos(cv,evt){
+ const rect=cv.getBoundingClientRect();
+ const src=evt.touches&&evt.touches.length?evt.touches[0]:(evt.changedTouches&&evt.changedTouches.length?evt.changedTouches[0]:evt);
+ return{
+  x:(src.clientX-rect.left)*(560/rect.width),
+  y:(src.clientY-rect.top)*(410/rect.height)
+ };
+}
+function hitTerminal(pt,rad=22){
+ let best=null,bd=rad;
+ for(const[id,t]of Object.entries(TERMS)){
+  const d=Math.hypot(pt.x-t.x,pt.y-t.y);
+  if(d<bd){bd=d;best=id}
+ }
+ return best;
+}
+function bindInteractiveCircuit(){
+ const cv=$('cc');if(!cv)return;
+ const onStart=e=>{
+  const pt=getCanvasLogicalPos(cv,e);
+  const hit=hitTerminal(pt,24);
+  if(hit){
+   e.preventDefault();
+   dragState.active=true;dragState.from=hit;dragState.x=pt.x;dragState.y=pt.y;dragState.hover=hit;
+   circuit();
+  }
+ };
+ const onMove=e=>{
+  const pt=getCanvasLogicalPos(cv,e);
+  const hit=hitTerminal(pt,22);
+  if(dragState.active){
+   e.preventDefault();
+   dragState.x=pt.x;dragState.y=pt.y;dragState.hover=hit;
+   circuit();
+  }else if(dragState.hover!==hit){
+   dragState.hover=hit;
+   cv.style.cursor=hit?'grab':'crosshair';
+   circuit();
+  }
+ };
+ const onEnd=e=>{
+  if(!dragState.active)return;
+  e.preventDefault();
+  const pt=getCanvasLogicalPos(cv,e);
+  const target=hitTerminal(pt,24);
+  const from=dragState.from;
+  dragState.active=false;dragState.from=null;dragState.hover=null;
+
+  if(target&&target!==from){
+   dragState.selected=null;
+   attemptConnection(from,target);
+  }else if(target===from){
+   if(dragState.selected&&dragState.selected!==from){
+    const prev=dragState.selected;dragState.selected=null;
+    attemptConnection(prev,from);
+   }else{
+    dragState.selected=(dragState.selected===from)?null:from;
+    if(dragState.selected){
+     setWireFb(`Selected terminal <b>${TERMS[from].lbl}</b> (${TERMS[from].name}). Now tap or drag to its destination terminal.`,'');
+    }
+    circuit();
+   }
+  }else{
+   circuit();
+  }
+ };
+ cv.addEventListener('mousedown',onStart);
+ window.addEventListener('mousemove',onMove);
+ window.addEventListener('mouseup',onEnd);
+ cv.addEventListener('touchstart',onStart,{passive:false});
+ window.addEventListener('touchmove',onMove,{passive:false});
+ window.addEventListener('touchend',onEnd,{passive:false});
+}
+
+/* ---------- Record Observations & V-I Graph ---------- */
+function fb(id,t,cls){const e=$(id);if(!e)return;e.textContent=t;e.className='fb '+(cls||'')}
+const clamp=t=>Math.max(-.03,Math.min(1.08,t));
+function rec(){if(!allWired()){SFX.readBad();return fb('fo','Complete all 7 terminal leads on the Circuit Wiring Diagram first.','w')}
+ if(!S.key){SFX.readBad();return fb('fo','Plug Key (K) is open \u2013 close it first.','w')}
+ if(!settled()){SFX.readBad();return fb('fo','Needles still swinging \u2013 wait.','w')}
+ const v=parseFloat($('ev').value),i=parseFloat($('ei').value);if(isNaN(v)||isNaN(i)){SFX.readBad();return fb('fo','Enter both readings.','bad')}
+ const[fv,,lv]=VR[S.vr],[fa,,la]=AR[S.ar],ev=v-clamp(M.V.tg)*fv,ei=i-clamp(M.A.tg)*fa*1000,p=[];
+ if(Math.abs(ev)>lv*1.0001)p.push('voltmeter too '+(ev>0?'high':'low'));if(Math.abs(ei)>la*1000.1)p.push('ammeter too '+(ei>0?'high':'low'));
+ if(p.length){SFX.readBad();return fb('fo','\u2717 Re-read: '+p.join(' and ')+'. Tap a meter to zoom (error must be \u2264 1 LC).','bad')}
+ SFX.readOk();fb('fo','\u2713 '+(Math.abs(ev)<=lv/2&&Math.abs(ei)<=la*500?'Excellent':'Good')+' reading! ('+(S.data.length+1)+' recorded — view in V–I Graph & Table tab)','ok');if(!i)return;
+ S.data.push([v,i]);graph()}
+function graph(){const cv=$('cg');if(!cv)return;const W=520,H=350,Lm=62,B=48,T=22,Rm=18;const c=setupHiDPI(cv,W,H);if(!c)return;c.fillStyle='#fff';c.fillRect(0,0,W,H);
+ S.fit=null;const d=S.data,xs=d.map(a=>a[1]),ys=d.map(a=>a[0]),nice=x=>{if(x<=0)return 1;const e=10**Math.floor(Math.log10(x));for(const m of[1,1.5,2,2.5,3,4,5,6,8,10])if(m*e>=x)return m*e},
+ xm=xs.length?nice(Math.max(...xs)*1.1):1,ym=ys.length?nice(Math.max(...ys)*1.1):1,px=x=>Lm+(W-Lm-Rm)*x/xm,py=y=>H-B-(H-B-T)*y/ym;
+ c.strokeStyle='#e0e0e0';c.fillStyle='#111';c.font='10.5px '+FF;c.textAlign='center';
+ for(let k=0;k<=5;k++){const gx=xm*k/5,gy=ym*k/5;c.beginPath();c.moveTo(px(gx),H-B);c.lineTo(px(gx),T);c.moveTo(Lm,py(gy));c.lineTo(W-Rm,py(gy));c.stroke();
+  c.fillText(+gx.toFixed(4),px(gx),H-B+14);c.textAlign='right';c.fillText(+gy.toFixed(4),Lm-6,py(gy)+3);c.textAlign='center'}
+ c.strokeStyle='#000';c.lineWidth=2;c.beginPath();c.moveTo(Lm,T);c.lineTo(Lm,H-B);c.lineTo(W-Rm,H-B);c.stroke();
+ c.font='bold 12px '+FF;c.fillText('Current I (mA)',W/2,H-10);c.save();c.translate(15,H/2);c.rotate(-PI/2);c.fillText('Potential Difference V (volt)',0,0);c.restore();
+ c.fillStyle='#1f5fd0';xs.forEach((x,k)=>{c.beginPath();c.arc(px(x),py(ys[k]),4.2,0,7);c.fill()});
+ const n=xs.length,sx=xs.reduce((a,b)=>a+b,0),sy=ys.reduce((a,b)=>a+b,0),den=n*xs.reduce((a,b)=>a+b*b,0)-sx*sx;let t='Record at least 2 readings in Ohm\'s Law Lab to plot the linear best-fit line.';
+ if(n>=2&&Math.abs(den)>1e-12){const b=(n*xs.reduce((a,x,k)=>a+x*ys[k],0)-sx*sy)/den,a=(sy-b*sx)/n;c.strokeStyle='#d02020';c.lineWidth=2;
+  c.beginPath();c.moveTo(px(0),py(a));c.lineTo(px(xm),py(a+b*xm));c.stroke();S.fit=b*1000;t='Best-fit slope R = '+(b*1000).toFixed(2)+' \u03a9   |   Mean V/I = '+(1000*ys.reduce((q,y,k)=>q+y/xs[k],0)/n).toFixed(2)+' \u03a9'}
+ if($('fit'))$('fit').innerHTML='<b>'+t+'</b>';
+ if($('nav-pts'))$('nav-pts').textContent=n;
+ if($('obs-count-pill'))$('obs-count-pill').textContent=n+(n===1?' reading recorded':' readings recorded');
+ if($('tb'))$('tb').innerHTML=n?d.map((r,k)=>`<tr><td>${k+1}<td>${r[0]}<td>${r[1]}<td>${(1000*r[0]/r[1]).toFixed(2)}</tr>`).join(''):'<tr><td colspan="4" class="muted" style="padding:14px">No readings recorded yet. Switch to <b>Ohm\'s Law Lab</b> to take measurements.</td></tr>'}
+function newR(){mkWire();S.data=[];S.fit=null;diams=[];ze=null;lenM=null;G.d=W.d;G.dl=+(W.d+rg()*.003).toFixed(4);G.wire=0;G.z=zerr($('zc2').checked);G.turn=300;
+ if($('gt'))$('gt').innerHTML='';if($('gm'))$('gm').innerHTML='';if($('res'))$('res').textContent='';if($('ml'))$('ml').innerHTML='';if($('fo-graph'))$('fo-graph').textContent='';graph();fb('fo','New wire fitted \u2013 take fresh readings.');ref();gd();mdraw()}
+function reveal(){const Ra=rA(),Rv=rV(),R=S.R;
+ const msg=`True R = ${R.toFixed(2)} \u03a9 | Conn A: ${(R*Rv/(R+Rv)).toFixed(2)} \u03a9, Conn B: ${(R+Ra).toFixed(2)} \u03a9`+(S.fit?` | Your slope: ${S.fit.toFixed(2)} \u03a9 (${(100*(S.fit-R)/R).toFixed(1)}%)`:'');
+ fb('fo',msg,'ok');
+ if($('fo-graph'))$('fo-graph').innerHTML='<b class="ok">'+msg+'</b>';
+}
+
+/* ---------- High-Resolution Screw Gauge (pitch 1 mm, 100 div, LC 0.01 mm) ---------- */
+const LC=.01,zerr=on=>on?LC*(Math.random()<.5?-1:1)*(2+Math.floor(Math.random()*5)):0;
+const G={z:zerr(1),wire:0,d:W.d,turn:300};G.dl=+(G.d+rg()*.003).toFixed(4);
+const rmin=()=>G.z+(G.wire?G.dl:0),gr=()=>Math.max(G.turn*LC,rmin()),grip=()=>G.turn*LC<=rmin()+1e-9;
+function sg(cv,w,gz=1){
+ const h=Math.round(w*320/780),c=setupHiDPI(cv,w,h);
+ if(!c)return;
+ const s=w/780,Y=150,K=36,XA=110,XB=351,r=gr(),g=r-G.z,x0=XB-G.z*K,xe=x0+r*K,tip=XA+g*K;
+ c.save();c.scale(s,s);
+ c.fillStyle='#eef2f6';c.fillRect(0,0,780,320);
+ if(gz>1){c.translate(390,150);c.scale(gz,gz);c.translate(-(xe+30),-Y)}
+ const R=(x,y,a,b,f,st='#333')=>{c.fillStyle=f;c.fillRect(x,y,a,b);c.strokeStyle=st;c.lineWidth=1;c.strokeRect(x,y,a,b)},
+ L=(a,b,d,e,w2=1,col='#222')=>{c.strokeStyle=col;c.lineWidth=w2;c.beginPath();c.moveTo(a,b);c.lineTo(d,e);c.stroke()},
+ T=(t,x,y,sz=8.5,al='center',col='#222')=>{c.fillStyle=col;c.font='700 '+sz+'px '+FF;c.textAlign=al;c.textBaseline='middle';c.fillText(t,x,y)};
+
+ const frmGrad=c.createLinearGradient(30,50,30,262);
+ frmGrad.addColorStop(0,'#6d7e90');frmGrad.addColorStop(0.5,'#4a5968');frmGrad.addColorStop(1,'#34404c');
+ R(30,50,45,212,frmGrad,'#252e38');
+ R(30,50,XB-54,36,'#566574','#252e38');
+ R(XB-26,50,26,212,frmGrad,'#252e38');
+ const anvGrad=c.createLinearGradient(0,Y-9,0,Y+9);
+ anvGrad.addColorStop(0,'#d8dee6');anvGrad.addColorStop(0.5,'#eef2f7');anvGrad.addColorStop(1,'#8c96a3');
+ R(75,Y-9,35,18,anvGrad);
+
+ if(G.wire){
+  const rd=G.dl*K/2;
+  const wGrad=c.createRadialGradient(XA+rd*0.7,Y-rd*0.3,1,XA+rd,Y,rd);
+  wGrad.addColorStop(0,'#e8a85a');wGrad.addColorStop(0.7,'#b8742a');wGrad.addColorStop(1,'#784512');
+  c.fillStyle=wGrad;c.beginPath();c.arc(XA+rd,Y,rd,0,7);c.fill();
+  c.strokeStyle='#5a320a';c.lineWidth=0.8;c.stroke();
+ }
+
+ const spGrad=c.createLinearGradient(0,Y-7,0,Y+7);
+ spGrad.addColorStop(0,'#d0d7e0');spGrad.addColorStop(0.45,'#f7f9fc');spGrad.addColorStop(1,'#8f99a6');
+ R(tip,Y-7,XB-26-tip,14,spGrad);
+
+ const slGrad=c.createLinearGradient(0,Y-36,0,Y+36);
+ slGrad.addColorStop(0,'#ded8c5');slGrad.addColorStop(0.45,'#faf6ea');slGrad.addColorStop(1,'#cfc7b0');
+ R(XB-4,Y-36,6*K+18,72,slGrad);
+ L(XB-4,Y,xe,Y,1.4,'#1a202c');
+
+ for(let n=0;n<14;n+=2){
+  const x=x0+n*.5*K;if(x<XB-3||x>xe-.6)continue;
+  L(x,Y,x,Y-16,1.2,'#1a202c');T(n/2,x,Y-25,8.5);
+ }
+ T('SCREW GAUGE   pitch 1 mm \u2022 100 circular divisions',10,16,10.5,'left','#1d2430');
+ T('anvil',92,Y+26,8,'center','#444');
+ T('sleeve (main scale, mm)',XB+4,Y+50,8.5,'left','#444');
+
+ const thGrad=c.createLinearGradient(0,Y-60,0,Y+60);
+ thGrad.addColorStop(0,'#adb6c2');thGrad.addColorStop(0.45,'#eef2f6');thGrad.addColorStop(1,'#88929e');
+ R(xe,Y-60,155,120,thGrad);
+ const bvGrad=c.createLinearGradient(0,Y-60,0,Y+60);
+ bvGrad.addColorStop(0,'#c6ced8');bvGrad.addColorStop(0.45,'#ffffff');bvGrad.addColorStop(1,'#9aa4b0');
+ R(xe,Y-60,22,120,bvGrad);
+ R(xe+155,Y-46,36,92,'#7c8794');
+
+ const f=(((r%1)+1)%1)/LC,j0=Math.floor(f);
+ for(let j=j0-14;j<=j0+14;j++){
+  const off=(j-f)*5;if(Math.abs(off)>56)continue;
+  const mj=((j%100)+100)%100%10==0;
+  L(xe,Y+off,xe+(mj?15:9),Y+off,mj?1.2:0.85,'#1a202c');
+  if(mj)T(((j%100)+100)%100,xe+28,Y+off,8.5,'left','#1a202c');
+ }
+ L(xe,Y,xe+22,Y,1.2,'#d61515');
+ T('thimble (circular scale)',xe+8,Y+74,8.5,'left','#444');
+ if(grip())T(G.wire?'Ratchet clicking \u2013 wire gripped, reading locked':'Jaws closed (no wire)',10,300,9.5,'left','#a03000');
+ c.restore();
+}
+function gd(){if($('tr'))$('tr').value=G.turn;if($('wb'))$('wb').textContent=G.wire?'Remove wire':'Insert wire';if($('gs'))$('gs').textContent=grip()?'\u2022 Ratchet clicking \u2013 reading locked.':'';if($('cs'))sg($('cs'),620);if(zk=='G'&&$('zc'))sg($('zc'),1100,GZ)}
+let wasGripped=false;
+function gn(d){G.turn=Math.max(-100,Math.min(600,+(G.turn+d).toFixed(3)));const gNow=grip();if(gNow&&!wasGripped)SFX.click();wasGripped=gNow;gd()}
+function togWire(){if(G.wire){G.wire=0;SFX.click()}else{if(Math.max(G.turn*LC,G.z)-G.z<G.dl+.0005){SFX.readBad();return fb('fg','Jaws too close \u2013 open the thimble first.','w')}G.wire=1;SFX.click()}wasGripped=grip();gd()}
+function gze(){if(G.wire){SFX.readBad();return fb('fg','Remove the wire and close the jaws first.','w')}if(!grip()){SFX.readBad();return fb('fg','Close the jaws completely (ratchet clicks).','w')}
+ const z=parseFloat($('ez').value);if(isNaN(z)){SFX.readBad();return fb('fg','Enter e.g. +0.03 or -0.02','bad')}
+ if(Math.abs(z-G.z)<=1.01*LC){ze=z;SFX.readOk();fb('fg','\u2713 Zero error '+(z>=0?'+':'')+z.toFixed(2)+' mm recorded. Subtract it from every reading.','ok')}
+ else{SFX.readBad();fb('fg','\u2717 Not right. CSR \u2264 50 \u2192 error = +CSR\u00d7LC; CSR > 50 \u2192 error = \u2212(100\u2212CSR)\u00d7LC.','bad')}}
+function grec(){if(!G.wire){SFX.readBad();return fb('fg','Insert the wire first.','w')}if(!grip()){SFX.readBad();return fb('fg','Tighten with the ratchet until it clicks, then read.','w')}
+ const m=parseFloat($('em').value),c=parseFloat($('ec').value);if(isNaN(m)||isNaN(c)){SFX.readBad();return fb('fg','Enter MSR and CSR.','bad')}
+ if(Math.abs(m-Math.round(m))>1e-6||m<0){SFX.readBad();return fb('fg','MSR must be a multiple of the pitch (1 mm).','bad')}if(c<0||c>=100){SFX.readBad();return fb('fg','CSR must be 0\u201399.','bad')}
+ const o=m+c*LC,e=o-gr();if(Math.abs(e)>1.01*LC){SFX.readBad();return fb('fg','\u2717 Re-read: too '+(e>0?'high':'low')+'. Check the sleeve mark just uncovered and the thimble division on the red line.','bad')}
+ const d=o-(ze||0);diams.push([m,c,o,d]);const n=diams.length;SFX.readOk();
+ fb('fg','\u2713 '+(Math.abs(e)<=.51*LC?'Excellent':'Good')+' reading!'+(G.z&&ze===null?' \u26a0 zero error not recorded!':'')+' Move the wire to a new spot and repeat.',G.z&&ze===null?'w':'ok');
+ $('gt').innerHTML=diams.map((r,k)=>`<tr><td>${k+1}<td>${r[0]}<td>${r[1]}<td>${r[2].toFixed(2)}<td>${r[3].toFixed(3)}</tr>`).join('');
+ $('gm').innerHTML='<b>Mean d = '+(diams.reduce((a,r)=>a+r[3],0)/n).toFixed(4)+' mm ('+n+' readings)</b>'}
+
+/* ---------- High-Resolution Metre Scale, Length & Specific Resistance ---------- */
+function mdr(cv,w){const h=Math.round(w*300/700),c=setupHiDPI(cv,w,h);if(!c)return;const s=w/700,L=10,R=690,sp=680;c.save();c.scale(s,s);c.fillStyle='#f4f1e8';c.fillRect(0,0,700,300);
+ const ox=x=>L+x*sp/100,mx=x=>L+(x-mp)*sp/4;c.fillStyle='#f6e7a8';c.fillRect(L,52,sp,32);c.strokeStyle='#222';c.fillStyle='#222';c.font='7px '+FF;c.textAlign='center';c.lineWidth=1;
+ c.font='bold 11px '+FF;c.textAlign='left';c.fillText('METRE SCALE \u2013 overview (0\u2013100 cm)',10,16);c.font='7px '+FF;c.textAlign='center';
+ for(let k=0;k<=100;k++){const h2=k%10==0?14:k%5==0?9:5;c.beginPath();c.moveTo(ox(k),52);c.lineTo(ox(k),52+h2);c.stroke();if(k%10==0)c.fillText(k,ox(k),52+h2+9)}
+ c.strokeStyle='#b87333';c.lineWidth=4;c.beginPath();c.moveTo(ox(W.x1),44);c.lineTo(ox(W.x1+W.L),44);c.stroke();
+ c.strokeStyle='#d01010';c.lineWidth=2;c.strokeRect(ox(mp),34,sp*4/100,54);
+ c.fillStyle='#a00';c.font='bold 11px '+FF;c.textAlign='left';c.fillText('Magnifier: '+mp.toFixed(2)+' \u2013 '+(mp+4).toFixed(2)+' cm',10,112);
+ c.fillStyle='#f6e7a8';c.fillRect(L,195,sp,75);c.strokeStyle='#222';c.lineWidth=1;c.fillStyle='#222';
+ for(let k=Math.ceil(mp*10-1e-9);k<=Math.floor((mp+4)*10+1e-9);k++){const x=mx(k/10),h2=k%10==0?36:k%5==0?26:16;c.beginPath();c.moveTo(x,195);c.lineTo(x,195+h2);c.stroke();
+  if(k%10==0){c.font='bold 13px '+FF;c.textAlign='center';c.fillText(k/10,x,195+h2+12)}}
+ const a=Math.max(L,mx(W.x1)),b=Math.min(R,mx(W.x1+W.L));if(b>a){c.fillStyle='#b87333';c.fillRect(a,163,b-a,32)}
+ c.strokeStyle='#3a210b';c.lineWidth=2;for(const x of[mx(W.x1),mx(W.x1+W.L)])if(x>=L&&x<=R){c.beginPath();c.moveTo(x,159);c.lineTo(x,195);c.stroke()}
+ c.restore();}
+function mdraw(){if($('cm'))mdr($('cm'),700);if(zk=='M'&&$('zc'))mdr($('zc'),1400)}
+function mb(d){mp=Math.max(0,Math.min(96,+(mp+d).toFixed(2)));if($('ms'))$('ms').value=mp;mdraw()}
+function lrec(){const a=parseFloat($('l1').value),b=parseFloat($('l2').value);if(isNaN(a)||isNaN(b)){SFX.readBad();return fb('fl','Enter both end readings (cm).','bad')}
+ const ea=a-W.x1,eb=b-(W.x1+W.L),p=[];if(Math.abs(ea)>.1001)p.push('left end too '+(ea>0?'high':'low'));if(Math.abs(eb)>.1001)p.push('right end too '+(eb>0?'high':'low'));
+ if(p.length){SFX.readBad();return fb('fl','\u2717 Re-read: '+p.join(' and ')+'. Slide the magnifier to that end.','bad')}
+ lenM=b-a;SFX.readOk();fb('fl','\u2713 Good readings!','ok');$('ml').innerHTML='<b>Length L = right \u2212 left = '+lenM.toFixed(2)+' cm</b>'}
+function useS(){if(S.fit==null){if($('res'))$('res').textContent='Record at least 2 V\u2013I readings in the Ohm\'s Law Lab tab first.';return}if($('eR'))$('eR').value=S.fit.toFixed(2)}
+const dm=()=>diams.reduce((a,r)=>a+r[3],0)/diams.length;
+function rho(){if(!diams.length)return $('res').textContent='Record diameter readings with the screw gauge first.';
+ if(lenM===null)return $('res').textContent='Measure the length with the metre scale first.';const R=parseFloat($('eR').value);
+ if(isNaN(R))return $('res').textContent='Enter R (\u03a9) or press "Use slope".';
+ const d=dm(),A=PI*d*d/4,V=A*1e-2*lenM,r=R*A*1e-6/(lenM/100),nm=MAT.reduce((a,m)=>Math.abs(Math.log(r/m[1]))<Math.abs(Math.log(r/a[1]))?m:a);
+ $('res').textContent=`Mean diameter d = ${d.toFixed(4)} mm\nArea A = \u03c0d\u00b2/4 = ${A.toFixed(5)} mm\u00b2\nLength L = ${lenM.toFixed(2)} cm\nVolume = A\u00b7L = ${V.toFixed(4)} cm\u00b3\nResistance R = ${R.toFixed(2)} \u03a9\n\u03c1 = R\u00b7A/L = ${r.toExponential(3)} \u03a9\u00b7m\nClosest in table: ${nm[0]} (${nm[1].toExponential(2)})`}
+function revW(){
+ const msg=`Material: ${W.n} (\u03c1 = ${W.rho.toExponential(2)} \u03a9\u00b7m) | d = ${W.d} mm | L = ${W.L} cm | True R = ${W.R.toFixed(3)} \u03a9`+(diams.length?` | Your mean d: ${dm().toFixed(4)} mm`:'')+(lenM!==null?` | Your L: ${lenM.toFixed(2)} cm`:'');
+ $('res').textContent=msg;
+}
+
+/* ---------- Help Tab Interactive Formula Helper ---------- */
+function updHelpSim(){
+ if(!$('hm-msr'))return;
+ const msr=parseFloat($('hm-msr').value)||0;
+ const csr=Math.max(0,Math.min(99,parseFloat($('hm-csr').value)||0));
+ const zcsr=parseInt($('hm-zcsr').value,10)||0;
+ const zerrVal=zcsr===0?0:(zcsr<=50?+(zcsr*0.01).toFixed(2):-((100-zcsr)*0.01).toFixed(2));
+ const obs=+(msr+csr*0.01).toFixed(2);
+ const corr=+(obs-zerrVal).toFixed(2);
+ const zSign=zerrVal>0?'+':'';
+ $('hm-out').innerHTML=
+  `1) <b>Zero Error</b> (from closure CSR = ${zcsr}): <b>${zSign}${zerrVal.toFixed(2)} mm</b><br>`+
+  `2) <b>Observed Reading</b> = ${msr} + (${csr} &times; 0.01) = <b>${obs.toFixed(2)} mm</b><br>`+
+  `3) <b>Corrected Diameter d</b> = ${obs.toFixed(2)} &minus; (${zSign}${zerrVal.toFixed(2)}) = <b class="ok">${corr.toFixed(2)} mm</b>`;
+}
+
+/* ---------- Zoom Overlay, Sub-Views, Tabs, Start Menu & Loop ---------- */
+let GZ=1;
+function zoom(k){zk=k;GZ=1;$('ov').hidden=false;let b=[];
+ if(k=='G')b=[-10,-1,-.1,.1,1,10].map(d=>`<button onclick="gn(${d})">${d>0?'+':''}${d}</button>`).concat([1,2,3].map(z=>`<button onclick="GZ=${z};gd()">\u00d7${z}</button>`));
+ else if(k=='M')b=[-5,-1,-.1,.1,1,5].map(d=>`<button onclick="mb(${d})">${d>0?'+':''}${d} cm</button>`).concat([`<input type="range" min="0" max="96" step="0.05" value="${mp}" style="width:min(80vw,600px)" oninput="mp=+this.value;$('ms').value=mp;mdraw()">`]);
+ else if(k=='REF'){b=[];drawCircuitDiagram($('zc'),920,true)}
+ else b=[-1,-.1,.1,1].map(d=>`<button onclick="bump(${d})">Rh ${d>0?'+':''}${d}</button>`);
+ $('zb').innerHTML=b.join('')+'<button onclick="zk=null;$(\'ov\').hidden=true">Close</button>';
+ if(k=='G')gd();else if(k=='M')mdraw()}
+
+function setOhmView(v){
+ const isDiag=(v==='diag');
+ $('ohm-view-diag').hidden=!isDiag;
+ $('ohm-view-ctrl').hidden=isDiag;
+ $('sub-btn-diag').classList.toggle('on',isDiag);
+ $('sub-btn-ctrl').classList.toggle('on',!isDiag);
+ if(isDiag)circuit();
+}
+function switchTab(t){
+ document.querySelectorAll('nav button[data-t]').forEach(x=>x.classList.toggle('on',x.dataset.t==t));
+ $('o').hidden=(t!='o');
+ $('p').hidden=(t!='p');
+ $('g').hidden=(t!='g');
+ $('h').hidden=(t!='h');
+ $('c').hidden=(t!='c');
+ if(t=='p')graph();
+ if(t=='g'){gd();mdraw()}
+ if(t=='h')circuit();
+}
+function launchApp(t){
+ SFX.click();
+ switchTab(t);
+ const aud=$('bgm-audio');
+ if(aud&&aud.src&&!aud.paused&&$('bgm-keep')&&!$('bgm-keep').checked){
+  aud.pause();syncBgmButtons();
+ }
+ $('ld').classList.add('out');
+ setTimeout(()=>{$('ld').hidden=true},460);
+}
+function openMenu(){
+ SFX.click();
+ $('ld-boot').hidden=true;
+ $('ld-menu').hidden=false;
+ $('ld').hidden=false;
+ requestAnimationFrame(()=>$('ld').classList.remove('out'));
+ const aud=$('bgm-audio');
+ if(aud&&aud.src&&aud.paused&&!bgmUserMuted){
+  aud.play().then(syncBgmButtons).catch(syncBgmButtons);
+ }
+}
+function goHelp(targetId){
+ switchTab('h');
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(targetId){
+  setTimeout(()=>{
+   const el=$(targetId);
+   if(el){
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+   }
+  },80);
+ }
+}
+document.querySelectorAll('nav button[data-t]').forEach(b=>b.onclick=()=>{switchTab(b.dataset.t);window.scrollTo(0,0)});
+function loop(){for(const k of['V','A']){const m=M[k],a=-121*(m.th-m.tg)-9.9*m.om;m.om+=a*.016;m.th+=m.om*.016;
+  if(m.th<-.03){m.th=-.03;m.om*=-.25}if(m.th>1.08){m.th=1.08;m.om*=-.25}}
+ if(!$('o').hidden){if($('cv'))dial($('cv'),'V',360);if($('ca'))dial($('ca'),'A',360)}if((zk=='V'||zk=='A')&&$('zc'))dial($('zc'),zk,1100);requestAnimationFrame(loop)}
+window.onerror=(m,u,l)=>{const e=document.createElement('div');e.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c22;color:#fff;padding:8px;z-index:200;font:12px monospace';e.textContent='Error: '+m+' (line '+l+')';document.body.appendChild(e)};
+bindInteractiveCircuit();
+renderWireUI();
+initDefaultMenuMusic();
+for(const f of[ref,graph,gd,mdraw,updHelpSim])try{f()}catch(e){window.onerror(e.message,'',0)}
+loop();
+setTimeout(()=>{if($('lt'))$('lt').textContent='Ready!'},320);
+setTimeout(()=>{if($('ld-boot'))$('ld-boot').hidden=true;if($('ld-menu'))$('ld-menu').hidden=false},600);
+</script></body></html>
